@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#3B5BDB">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Cleanzr">
+  <meta name="description" content="Gestion d'interventions de ménage pour locations courte durée">
+
+  <title>Cleanzr</title>
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/form.css">
+  <link rel="stylesheet" href="css/agent.css">
+</head>
+<body>
+
+  <!-- ======================================================
+       Écran de connexion
+       ====================================================== -->
+  <div id="auth-screen" class="auth-screen">
+    <div class="auth-container" id="auth-container">
+
+      <!-- Logo — stable pendant toutes les transitions -->
+      <div class="auth-logo">
+        <span class="logo-text">Cleanzr</span>
+        <span class="logo-tagline">Gestion d'interventions</span>
+      </div>
+
+      <!-- Zone panels — fading lors des transitions -->
+      <div class="auth-panels" id="auth-panels">
+
+        <!-- PANEL A : Création de profil (Flux 1) -->
+        <div id="panel-creation" class="auth-panel" hidden>
+          <h2 class="auth-step-title">Créer mon profil</h2>
+          <p class="auth-step-sub">Choisissez votre rôle et définissez un code PIN.</p>
+
+          <div class="role-selector">
+            <button class="role-btn" data-role="host">
+              <span class="role-btn__icon">🏠</span>
+              <span class="role-btn__label">Hôte</span>
+              <span class="role-btn__desc">Je gère des locations</span>
+            </button>
+            <button class="role-btn" data-role="agent">
+              <span class="role-btn__icon">🧽</span>
+              <span class="role-btn__label">Agent</span>
+              <span class="role-btn__desc">J'effectue les ménages</span>
+            </button>
+          </div>
+
+          <div class="form-group" style="width:100%;">
+            <label class="form-label" for="input-nom">Votre prénom ou nom</label>
+            <input class="input" id="input-nom" type="text" placeholder="Ex : Marie"
+                   autocomplete="off" autocorrect="off" spellcheck="false" maxlength="40">
+          </div>
+
+          <button class="btn btn--primary btn--full" id="btn-creation-next">
+            Choisir mon code PIN →
+          </button>
+
+          <button class="btn-link" id="btn-deja-acces">J'ai déjà un accès</button>
+        </div>
+
+        <!-- PANEL B : Clavier PIN (partagé — Flux 1/2/3/4) -->
+        <div id="panel-pin" class="auth-panel" hidden>
+          <p class="pin-ctx-greeting" id="pin-ctx-greeting" hidden></p>
+          <p class="auth-step-title" id="pin-ctx-title">Entrez votre code PIN</p>
+
+          <div class="pin-display" id="pin-display" role="status">
+            <span class="pin-dot" id="dot-0"></span>
+            <span class="pin-dot" id="dot-1"></span>
+            <span class="pin-dot" id="dot-2"></span>
+            <span class="pin-dot" id="dot-3"></span>
+          </div>
+
+          <p class="pin-label" id="pin-label" aria-live="polite"></p>
+
+          <div class="pin-keyboard" id="pin-keyboard" role="group" aria-label="Clavier PIN">
+            <button class="pin-key" data-key="1" aria-label="1">1</button>
+            <button class="pin-key" data-key="2" aria-label="2">2</button>
+            <button class="pin-key" data-key="3" aria-label="3">3</button>
+            <button class="pin-key" data-key="4" aria-label="4">4</button>
+            <button class="pin-key" data-key="5" aria-label="5">5</button>
+            <button class="pin-key" data-key="6" aria-label="6">6</button>
+            <button class="pin-key" data-key="7" aria-label="7">7</button>
+            <button class="pin-key" data-key="8" aria-label="8">8</button>
+            <button class="pin-key" data-key="9" aria-label="9">9</button>
+            <button class="pin-key pin-key--empty" aria-hidden="true" tabindex="-1"></button>
+            <button class="pin-key" data-key="0" aria-label="0">0</button>
+            <button class="pin-key pin-key--delete" id="pin-delete" aria-label="Effacer">⌫</button>
+          </div>
+
+          <button class="btn-link" id="pin-secondary-btn" hidden></button>
+        </div>
+
+        <!-- PANEL C : PIN oublié — saisie du nom (Flux 4 étape 1) -->
+        <div id="panel-forgot" class="auth-panel" hidden>
+          <h2 class="auth-step-title">Code PIN oublié</h2>
+          <p class="auth-step-sub">Entrez votre nom pour retrouver votre accès.</p>
+
+          <div class="form-group" style="width:100%;">
+            <label class="form-label" for="input-forgot-nom">Votre prénom ou nom</label>
+            <input class="input" id="input-forgot-nom" type="text" placeholder="Ex : Marie"
+                   autocomplete="off" autocorrect="off" spellcheck="false" maxlength="40">
+          </div>
+
+          <button class="btn btn--primary btn--full" id="btn-forgot-nom-next">
+            Vérifier →
+          </button>
+
+          <button class="btn-link" id="btn-forgot-back">← Retour</button>
+        </div>
+
+      </div><!-- /auth-panels -->
+
+      <!-- Spinner global (superposé aux panels) -->
+      <div id="auth-spinner" class="auth-spinner hidden" role="status" aria-live="polite">
+        <div class="spinner"></div>
+        <span>Vérification…</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Conteneur principal de l'app (pages injectées par le routeur) -->
+  <div id="main-app" class="hidden"></div>
+
+  <!-- Notifications toast -->
+  <div id="toast-container" class="toast-container" role="alert" aria-live="polite"></div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
+
+  <!-- Config Firebase — à créer depuis le template (ignoré par git) -->
+  <script src="firebase-config.js"></script>
+
+  <!-- App scripts -->
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/pages.js"></script>
+  <script src="js/router.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

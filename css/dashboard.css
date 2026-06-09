@@ -1,0 +1,222 @@
+/* ============================================================
+   dashboard.css — Dashboard hôte & agent
+   ============================================================ */
+
+/* --- Stats row -------------------------------------------- */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: var(--c-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--c-border-light);
+  padding: 14px 12px;
+  text-align: center;
+  box-shadow: var(--shadow-xs);
+}
+
+.stat-value {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 1.625rem;
+  font-weight: 700;
+  color: var(--c-primary);
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--c-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* --- Section block ---------------------------------------- */
+.section-block {
+  margin-bottom: 24px;
+}
+
+.section-block__title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--c-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+  padding: 0 2px;
+}
+
+/* --- Intervention card (list item) ------------------------ */
+.intervention-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  background: var(--c-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--c-border-light);
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+  transition: box-shadow var(--transition), border-color var(--transition);
+  -webkit-tap-highlight-color: transparent;
+}
+.intervention-card:hover  { box-shadow: var(--shadow-md); border-color: var(--c-border); }
+.intervention-card:active { transform: scale(0.99); }
+
+.intervention-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.intervention-card__logement {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--c-secondary);
+  line-height: 1.3;
+}
+
+.intervention-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.8125rem;
+  color: var(--c-text-muted);
+}
+
+.intervention-card__date {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8125rem;
+  color: var(--c-text-muted);
+}
+
+.intervention-card__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.intervention-card__agent {
+  font-size: 0.8125rem;
+  color: var(--c-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.intervention-card__nuits {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--c-text-muted);
+}
+
+/* Date highlight */
+.date-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--c-primary-light);
+  color: var(--c-primary);
+  border-radius: var(--radius-sm);
+  padding: 5px 9px;
+  min-width: 46px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  line-height: 1;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.date-badge__day {
+  font-family: var(--font-heading);
+  font-size: 1.375rem;
+  font-weight: 700;
+}
+
+/* --- FAB -------------------------------------------------- */
+.fab {
+  position: fixed;
+  bottom: 28px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--c-primary);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(59, 91, 219, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+}
+.fab:hover  { background: var(--c-primary-hover); box-shadow: 0 6px 20px rgba(59,91,219,0.45); }
+.fab:active { transform: scale(0.93); }
+
+/* Center FAB within max-width container */
+@media (min-width: 640px) {
+  .fab { right: calc(50% - 300px); }
+}
+
+/* --- Interventions list ----------------------------------- */
+.interventions-list { display: flex; flex-direction: column; gap: 0; }
+
+.list-date-separator {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--c-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 16px 2px 6px;
+}
+
+/* --- Agent today highlight -------------------------------- */
+.today-card {
+  background: linear-gradient(135deg, var(--c-primary) 0%, #5C7CFA 100%);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: var(--shadow-md);
+}
+.today-card .intervention-card__logement { color: #fff; }
+.today-card .intervention-card__meta     { color: rgba(255,255,255,0.75); }
+.today-card .intervention-card__agent    { color: rgba(255,255,255,0.75); }
+.today-card .intervention-card__nuits    { color: rgba(255,255,255,0.75); }
+.today-card .date-badge {
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+}
+
+/* --- Filter tabs row -------------------------------------- */
+.filter-row {
+  margin-bottom: 16px;
+}
+
+/* --- Greeting banner -------------------------------------- */
+.greeting {
+  margin-bottom: 20px;
+}
+
+.greeting__hello {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--c-secondary);
+}
+
+.greeting__sub {
+  font-size: 0.875rem;
+  color: var(--c-text-muted);
+  margin-top: 2px;
+}

@@ -1,0 +1,207 @@
+/* ============================================================
+   form.css — Formulaire nouvelle réservation
+   ============================================================ */
+
+.form-page {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.form-section {
+  background: var(--c-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--c-border-light);
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-xs);
+}
+
+.form-section__title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--c-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--c-border-light);
+}
+
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* --- Date range picker ------------------------------------ */
+.date-range {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* --- Stepper (nb voyageurs) ------------------------------- */
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.stepper__btn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--c-primary);
+  background: var(--c-primary-light);
+  transition: background var(--transition);
+  flex-shrink: 0;
+}
+.stepper__btn:hover  { background: #D0DFFE; }
+.stepper__btn:active { background: #B7C9FD; }
+.stepper__btn:disabled { color: var(--c-border); background: var(--c-bg); cursor: not-allowed; }
+
+.stepper__value {
+  flex: 1;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--c-secondary);
+  padding: 0 8px;
+  background: var(--c-surface);
+  border-left: 1px solid var(--c-border);
+  border-right: 1px solid var(--c-border);
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- Checkbox options (signalements) ---------------------- */
+.checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--c-bg);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.checkbox-item:hover { background: var(--c-border-light); }
+.checkbox-item:has(input:checked) { background: var(--c-primary-light); }
+
+.checkbox-item input[type="checkbox"] { display: none; }
+
+.checkbox-box {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--c-border);
+  border-radius: var(--radius-xs);
+  background: var(--c-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.checkbox-item:has(input:checked) .checkbox-box {
+  background: var(--c-primary);
+  border-color: var(--c-primary);
+}
+.checkbox-item:has(input:checked) .checkbox-box::after {
+  content: '';
+  width: 5px;
+  height: 9px;
+  border: 2px solid #fff;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg) translate(-1px, -1px);
+  display: block;
+}
+
+.checkbox-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--c-text);
+}
+
+/* --- Submit bar ------------------------------------------ */
+.form-submit-bar {
+  position: sticky;
+  bottom: 0;
+  background: var(--c-surface);
+  padding: 14px 16px;
+  border-top: 1px solid var(--c-border-light);
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
+  z-index: 50;
+  margin: 0 -16px -80px;
+}
+
+/* --- Date summary row ------------------------------------- */
+.date-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--c-bg);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 0.875rem;
+}
+
+.date-summary__label { color: var(--c-text-muted); font-weight: 500; }
+.date-summary__value { font-weight: 600; color: var(--c-secondary); }
+
+/* --- Agent select card ------------------------------------ */
+.agent-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.agent-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--c-bg);
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition);
+}
+.agent-option.selected {
+  background: var(--c-primary-light);
+  border-color: var(--c-primary);
+}
+
+.agent-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--c-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.agent-name  { font-weight: 600; font-size: 0.9375rem; }
+.agent-email { font-size: 0.75rem; color: var(--c-text-muted); }
