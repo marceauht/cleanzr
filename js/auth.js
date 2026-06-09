@@ -437,8 +437,8 @@
     const mainApp    = document.getElementById('main-app');
     if (authScreen) authScreen.classList.add('hidden');
     if (mainApp)    mainApp.classList.remove('hidden');
-    window.location.hash = role === 'host' ? '#/host/dashboard' : '#/agent/dashboard';
     window.dispatchEvent(new CustomEvent('czr:login'));
+    window.location.hash = role === 'host' ? '#/host/dashboard' : '#/agent/dashboard';
   }
 
   /* --- Déconnexion --------------------------------------- */

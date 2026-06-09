@@ -38,9 +38,7 @@ window.initHostDashboard = async function () {
     allInterventions = res?.interventions || [];
     updateStats(allInterventions);
     renderHostList(filterBy(allInterventions, activeFilter));
-    if (Notification.permission === 'default') {
-      requestNotificationPermission(session.get('userId')).catch(() => null);
-    }
+    requestNotificationPermission(session.get('userId')).catch(() => null);
   } catch {
     document.getElementById('interventions-list').innerHTML =
       '<div class="empty-state"><p>Impossible de charger les interventions.</p></div>';
@@ -364,9 +362,7 @@ window.initAgentDashboard = async function () {
     const res = await getInterventions();
     allInterventions = res?.interventions || [];
     renderAgentList(filterBy(allInterventions, activeFilter));
-    if (Notification.permission === 'default') {
-      requestNotificationPermission(session.get('userId')).catch(() => null);
-    }
+    requestNotificationPermission(session.get('userId')).catch(() => null);
   } catch {
     document.getElementById('interventions-list').innerHTML =
       '<div class="empty-state"><p>Impossible de charger les interventions.</p></div>';
