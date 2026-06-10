@@ -1,5 +1,5 @@
 /* ============================================================
-   auth.css — Clavier PIN et écran de connexion
+   auth.css — Écran de connexion et clavier PIN
    ============================================================ */
 
 .auth-screen {
@@ -7,17 +7,42 @@
   align-items: center;
   justify-content: center;
   min-height: 100dvh;
-  background: var(--c-bg);
+  background: var(--bg-primary);
   padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-orbe {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent-bg) 0%, transparent 70%);
+  filter: blur(80px);
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  opacity: 0.8;
 }
 
 .auth-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 28px;
+  gap: 24px;
   width: 100%;
   max-width: 340px;
+  background: var(--bg-glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  z-index: 1;
 }
 
 /* --- Logo ------------------------------------------------- */
@@ -26,20 +51,19 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  margin-bottom: 4px;
 }
 
 .logo-text {
   font-family: var(--font-heading);
   font-size: 2rem;
   font-weight: 700;
-  color: var(--c-primary);
+  color: var(--accent);
   letter-spacing: -0.03em;
 }
 
 .logo-tagline {
   font-size: 0.8125rem;
-  color: var(--c-text-muted);
+  color: var(--text-secondary);
   font-weight: 500;
   letter-spacing: 0.01em;
 }
@@ -52,18 +76,20 @@
 }
 
 .pin-dot {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  border: 2px solid var(--c-border);
+  border: 2px solid var(--border-color);
   background: transparent;
-  transition: background var(--transition), border-color var(--transition), transform 120ms ease;
+  transition: background var(--transition-spring), border-color var(--transition-spring), transform var(--transition-spring), opacity var(--transition-spring);
+  opacity: 0.6;
 }
 
 .pin-dot--filled {
-  background: var(--c-primary);
-  border-color: var(--c-primary);
-  transform: scale(1.1);
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.2);
+  opacity: 1;
 }
 
 @keyframes shake {
@@ -73,26 +99,24 @@
   60%       { transform: translateX(-4px); }
   80%       { transform: translateX(4px); }
 }
-
 .pin-display--shake { animation: shake 0.45s ease; }
 
 /* --- PIN label -------------------------------------------- */
 .pin-label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--c-text-muted);
+  color: var(--text-secondary);
   text-align: center;
   min-height: 20px;
   transition: color var(--transition);
 }
-
-.pin-label--error { color: var(--c-danger); }
+.pin-label--error { color: var(--danger); }
 
 /* --- PIN keyboard ----------------------------------------- */
 .pin-keyboard {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 10px;
   width: 100%;
 }
 
@@ -104,37 +128,35 @@
   font-family: var(--font-heading);
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--c-secondary);
-  background: var(--c-surface);
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
   border-radius: var(--radius-md);
-  border: 1px solid var(--c-border-light);
+  border: 1px solid var(--border-glass);
   box-shadow: var(--shadow-sm);
-  transition: background var(--transition), transform 80ms ease, box-shadow var(--transition);
+  transition: transform var(--transition-spring), opacity var(--transition);
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
-
 .pin-key:active:not(.pin-key--empty) {
-  background: var(--c-primary-light);
-  transform: scale(0.93);
-  box-shadow: none;
+  transform: scale(0.92);
+  opacity: 0.65;
 }
-
 .pin-key--empty {
   background: transparent;
   border-color: transparent;
   box-shadow: none;
   cursor: default;
 }
-
 .pin-key--delete {
   font-size: 1.25rem;
-  color: var(--c-text-muted);
+  color: var(--text-secondary);
 }
-
 .pin-key--delete:active {
-  background: var(--c-danger-bg) !important;
-  color: var(--c-danger) !important;
+  background: var(--danger-bg) !important;
+  color: var(--danger) !important;
+  border-color: var(--danger) !important;
 }
 
 /* --- Auth spinner ----------------------------------------- */
@@ -143,23 +165,18 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  color: var(--c-text-muted);
+  color: var(--text-secondary);
   font-size: 0.875rem;
   font-weight: 500;
 }
 
-/* ============================================================
-   Panels multi-flux
-   ============================================================ */
-
-/* Zone panels — fade lors des transitions */
+/* --- Panels ----------------------------------------------- */
 .auth-panels {
   width: 100%;
   transition: opacity 200ms ease;
 }
 .auth--fading { opacity: 0; pointer-events: none; }
 
-/* Chaque panel est un flex-column centré */
 .auth-panel {
   display: flex;
   flex-direction: column;
@@ -168,44 +185,37 @@
   width: 100%;
 }
 
-/* --- Titres ----------------------------------------------- */
 .auth-step-title {
   font-family: var(--font-heading);
   font-size: 1.125rem;
   font-weight: 700;
-  color: var(--c-secondary);
+  color: var(--text-primary);
   text-align: center;
-  margin-bottom: 2px;
 }
 
 .auth-step-sub {
   font-size: 0.8125rem;
-  color: var(--c-text-muted);
+  color: var(--text-secondary);
   text-align: center;
   margin-top: -8px;
   line-height: 1.5;
 }
 
-/* --- Greeting au-dessus du PIN ---------------------------- */
 .pin-ctx-greeting {
   font-family: var(--font-heading);
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--c-secondary);
+  color: var(--text-primary);
   text-align: center;
-  margin-bottom: 0;
 }
-
-/* Quand le greeting est présent, le titre passe en sous-titre */
 .pin-ctx-greeting:not([hidden]) + .auth-step-title {
   font-family: var(--font-body);
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--c-text-muted);
-  margin-bottom: 0;
+  color: var(--text-secondary);
 }
 
-/* --- Sélecteur de rôle ----------------------------------- */
+/* --- Role selector --------------------------------------- */
 .role-selector {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -219,29 +229,28 @@
   align-items: center;
   gap: 5px;
   padding: 16px 10px;
-  background: var(--c-surface);
-  border: 2px solid var(--c-border);
+  background: var(--bg-surface-2);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1.5px solid var(--border-glass);
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: border-color 180ms ease, background 180ms ease, transform 80ms ease;
+  transition: border-color var(--transition-spring), background var(--transition), transform var(--transition-spring);
   -webkit-tap-highlight-color: transparent;
 }
+.role-btn:active   { transform: scale(0.95); }
+.role-btn--active  { border-color: var(--accent); background: var(--accent-bg); }
 
-.role-btn:active        { transform: scale(0.96); }
-.role-btn--active       { border-color: var(--c-primary); background: var(--c-primary-light); }
+.role-btn__icon  { font-size: 2.5rem; line-height: 1; margin-bottom: 2px; }
+.role-btn__label { font-family: var(--font-heading); font-size: 0.9375rem; font-weight: 700; color: var(--text-primary); }
+.role-btn__desc  { font-size: 0.6875rem; color: var(--text-secondary); text-align: center; line-height: 1.35; }
+.role-btn--active .role-btn__label { color: var(--accent); }
 
-.role-btn__icon  { font-size: 2rem; line-height: 1; margin-bottom: 2px; }
-.role-btn__label { font-family: var(--font-heading); font-size: 0.9375rem; font-weight: 700; color: var(--c-secondary); }
-.role-btn__desc  { font-size: 0.6875rem; color: var(--c-text-muted); text-align: center; line-height: 1.35; }
-
-/* Sélectionné : accentuer le label */
-.role-btn--active .role-btn__label { color: var(--c-primary); }
-
-/* --- Bouton lien texte ----------------------------------- */
+/* --- Link button ----------------------------------------- */
 .btn-link {
   background: none;
   border: none;
-  color: var(--c-primary);
+  color: var(--accent);
   font-family: var(--font-body);
   font-size: 0.875rem;
   font-weight: 500;

@@ -9,23 +9,19 @@
 }
 
 .form-section {
-  background: var(--c-surface);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--c-border-light);
   padding: 16px;
   margin-bottom: 12px;
-  box-shadow: var(--shadow-xs);
 }
 
 .form-section__title {
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--c-text-muted);
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin-bottom: 14px;
   padding-bottom: 10px;
-  border-bottom: 1px solid var(--c-border-light);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .form-stack {
@@ -46,7 +42,7 @@
   display: flex;
   align-items: center;
   gap: 0;
-  border: 1.5px solid var(--c-border);
+  border: 1.5px solid var(--border-color);
   border-radius: var(--radius-sm);
   overflow: hidden;
 }
@@ -59,97 +55,86 @@
   justify-content: center;
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--c-primary);
-  background: var(--c-primary-light);
+  color: var(--accent);
+  background: var(--accent-bg);
   transition: background var(--transition);
   flex-shrink: 0;
 }
-.stepper__btn:hover  { background: #D0DFFE; }
-.stepper__btn:active { background: #B7C9FD; }
-.stepper__btn:disabled { color: var(--c-border); background: var(--c-bg); cursor: not-allowed; }
+.stepper__btn:hover  { background: rgba(59,91,219,0.14); }
+.stepper__btn:active { background: rgba(59,91,219,0.22); }
+.stepper__btn:disabled { color: var(--border-color); background: var(--bg-primary); cursor: not-allowed; }
 
 .stepper__value {
   flex: 1;
   text-align: center;
   font-size: 1rem;
   font-weight: 600;
-  color: var(--c-secondary);
+  color: var(--text-primary);
   padding: 0 8px;
-  background: var(--c-surface);
-  border-left: 1px solid var(--c-border);
-  border-right: 1px solid var(--c-border);
+  background: var(--bg-surface);
+  border-left: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
   height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* --- Checkbox options (signalements) ---------------------- */
-.checkbox-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.checkbox-item {
+/* --- Animated toggle switch ------------------------------- */
+.toggle-label {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  background: var(--c-bg);
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg-surface);
   border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
   cursor: pointer;
-  transition: background var(--transition);
+  user-select: none;
+  transition: background var(--transition), border-color var(--transition);
+  -webkit-tap-highlight-color: transparent;
 }
-.checkbox-item:hover { background: var(--c-border-light); }
-.checkbox-item:has(input:checked) { background: var(--c-primary-light); }
+.toggle-label:hover { background: var(--bg-glass); }
+.toggle-label:has(.toggle-input:checked) {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+}
+.toggle-label span {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
 
-.checkbox-item input[type="checkbox"] { display: none; }
-
-.checkbox-box {
+.toggle-input {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  width: 44px;
+  height: 26px;
+  border-radius: 99px;
+  background: var(--border-color);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--transition-spring);
+}
+.toggle-input::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
   width: 20px;
   height: 20px;
-  border: 2px solid var(--c-border);
-  border-radius: var(--radius-xs);
-  background: var(--c-surface);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: background var(--transition), border-color var(--transition);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  transition: transform var(--transition-spring);
 }
-
-.checkbox-item:has(input:checked) .checkbox-box {
-  background: var(--c-primary);
-  border-color: var(--c-primary);
+.toggle-input:checked {
+  background: var(--accent);
 }
-.checkbox-item:has(input:checked) .checkbox-box::after {
-  content: '';
-  width: 5px;
-  height: 9px;
-  border: 2px solid #fff;
-  border-top: none;
-  border-left: none;
-  transform: rotate(45deg) translate(-1px, -1px);
-  display: block;
-}
-
-.checkbox-label {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--c-text);
-}
-
-/* --- Submit bar ------------------------------------------ */
-.form-submit-bar {
-  position: sticky;
-  bottom: 0;
-  background: var(--c-surface);
-  padding: 14px 16px;
-  border-top: 1px solid var(--c-border-light);
-  box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
-  z-index: 50;
-  margin: 0 -16px -80px;
+.toggle-input:checked::after {
+  transform: translateX(18px);
 }
 
 /* --- Date summary row ------------------------------------- */
@@ -157,14 +142,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--c-bg);
+  background: var(--bg-primary);
   border-radius: var(--radius-sm);
   padding: 10px 12px;
   font-size: 0.875rem;
 }
 
-.date-summary__label { color: var(--c-text-muted); font-weight: 500; }
-.date-summary__value { font-weight: 600; color: var(--c-secondary); }
+.date-summary__label { color: var(--text-secondary); font-weight: 500; }
+.date-summary__value { font-weight: 600; color: var(--text-primary); }
 
 /* --- Agent select card ------------------------------------ */
 .agent-selector {
@@ -178,22 +163,22 @@
   align-items: center;
   gap: 12px;
   padding: 12px;
-  background: var(--c-bg);
+  background: var(--bg-primary);
   border: 1.5px solid transparent;
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: border-color var(--transition), background var(--transition);
 }
 .agent-option.selected {
-  background: var(--c-primary-light);
-  border-color: var(--c-primary);
+  background: var(--accent-bg);
+  border-color: var(--accent);
 }
 
 .agent-avatar {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: var(--c-primary);
+  background: var(--accent);
   color: #fff;
   display: flex;
   align-items: center;
@@ -204,4 +189,18 @@
 }
 
 .agent-name  { font-weight: 600; font-size: 0.9375rem; }
-.agent-email { font-size: 0.75rem; color: var(--c-text-muted); }
+.agent-email { font-size: 0.75rem; color: var(--text-secondary); }
+
+/* --- Submit bar ------------------------------------------ */
+.form-submit-bar {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg-glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  padding: 14px 16px;
+  border-top: 1px solid var(--border-glass);
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+  z-index: 50;
+  margin: 0 -16px -80px;
+}

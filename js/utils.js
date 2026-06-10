@@ -118,3 +118,18 @@ function setText(selector, text, root = document) {
   const el = $(selector, root);
   if (el) el.textContent = text;
 }
+
+/* --- Thème ------------------------------------------------ */
+function initTheme() {
+  const saved       = localStorage.getItem('czr_theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme       = saved || (prefersDark ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', theme);
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  const next    = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('czr_theme', next);
+}

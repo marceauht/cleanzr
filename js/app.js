@@ -4,6 +4,8 @@
 
 (function () {
 
+  let foregroundListenerActive = false;
+
   /* --- Firebase ------------------------------------------- */
   function initFirebase() {
     const cfg = window.FIREBASE_CONFIG;
@@ -14,8 +16,18 @@
     try {
       window.firebaseApp = firebase.initializeApp(cfg);
     } catch {
-      window.firebaseApp = firebase.app(); // déjà initialisé
+      window.firebaseApp = firebase.app();
     }
+  }
+
+  /* --- Active l'écoute foreground (une seule fois) -------- */
+  function activerForeground() {
+    if (foregroundListenerActive) return;
+    foregroundListenerActive = true;
+    onForegroundMessage(payload => {
+      const body = payload.notification?.body || payload.data?.body || 'Nouvelle notification';
+      toast(body, 'info');
+    });
   }
 
   /* --- Restaure la session si déjà connecté --------------- */
@@ -37,6 +49,7 @@
 
   /* --- DOMContentLoaded ------------------------------------ */
   document.addEventListener('DOMContentLoaded', async () => {
+    initTheme();
     initFirebase();
 
     const hasSession = restoreSession();
@@ -45,28 +58,16 @@
 
     if (hasSession) {
       const userId = session.get('userId');
-
-      // Récupère le token FCM et l'enregistre dans la Sheet
       await requestNotificationPermission(userId);
-
-      // Écoute les messages foreground
-      onForegroundMessage(payload => {
-        const body = payload.notification?.body || payload.data?.body || 'Nouvelle notification';
-        toast(body, 'info');
-      });
+      activerForeground();
     }
   });
 
   /* --- Post-login : appelé par auth.js après succès ------- */
   window.addEventListener('czr:login', async () => {
     const userId = session.get('userId');
-
     await requestNotificationPermission(userId);
-
-    onForegroundMessage(payload => {
-      const body = payload.notification?.body || payload.data?.body || 'Nouvelle notification';
-      toast(body, 'info');
-    });
+    activerForeground();
   });
 
 })();

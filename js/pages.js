@@ -4,21 +4,42 @@
    ============================================================ */
 
 /* ---------------------------------------------------------- */
-/*  Dashboard Hôte                                            */
+/*  Dashboard unifié (hôte + agent)                           */
 /* ---------------------------------------------------------- */
-window.initHostDashboard = async function () {
-  const name = session.get('name') || 'Hôte';
-  setText('#header-user', name);
+window.initDashboard = async function () {
+  const role = session.get('role');
+  const name = session.get('name') || (role === 'host' ? 'Hôte' : 'Agent');
+
   setText('#greeting-text', `Bonjour, ${name.split(' ')[0]} 👋`);
   setText('#greeting-date', formatDay(new Date().toISOString()));
 
+  const btnTheme = document.getElementById('btn-theme');
+  if (btnTheme) {
+    const updateIcon = () => {
+      btnTheme.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
+    };
+    updateIcon();
+    btnTheme.addEventListener('click', () => { toggleTheme(); updateIcon(); });
+  }
+
   document.getElementById('btn-logout')?.addEventListener('click', logout);
-  document.getElementById('btn-new')?.addEventListener('click', () => {
-    window.location.hash = '#/host/reservation/new';
-  });
+
+  if (role === 'host') {
+    document.getElementById('stats-section')?.removeAttribute('hidden');
+    const btnNew = document.getElementById('btn-new');
+    if (btnNew) {
+      btnNew.removeAttribute('hidden');
+      btnNew.addEventListener('click', () => { window.location.hash = '#/host/reservation/new'; });
+    }
+  }
 
   let allInterventions = [];
-  let activeFilter = 'all';
+  let activeFilter = role === 'host' ? 'all' : 'avenir';
+
+  document.querySelectorAll('.filter-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.filter === activeFilter);
+    tab.setAttribute('aria-selected', String(tab.dataset.filter === activeFilter));
+  });
 
   document.querySelectorAll('.filter-tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -29,15 +50,15 @@ window.initHostDashboard = async function () {
       tab.classList.add('active');
       tab.setAttribute('aria-selected', 'true');
       activeFilter = tab.dataset.filter;
-      renderHostList(filterBy(allInterventions, activeFilter));
+      renderList(filterBy(allInterventions, activeFilter));
     });
   });
 
   try {
     const res = await getInterventions();
     allInterventions = res?.interventions || [];
-    updateStats(allInterventions);
-    renderHostList(filterBy(allInterventions, activeFilter));
+    if (role === 'host') updateStats(allInterventions);
+    renderList(filterBy(allInterventions, activeFilter));
     requestNotificationPermission(session.get('userId')).catch(() => null);
   } catch {
     document.getElementById('interventions-list').innerHTML =
@@ -52,34 +73,40 @@ window.initHostDashboard = async function () {
   }
 
   function filterBy(list, f) {
-    if (f === 'avenir')    return list.filter(i => ['en_attente','confirmee','en_cours'].includes(i.statut));
+    if (f === 'avenir') return list.filter(i => role === 'host'
+      ? ['en_attente', 'confirmee', 'en_cours'].includes(i.statut)
+      : i.statut !== 'terminee' && i.statut !== 'annulee'
+    );
     if (f === 'terminees') return list.filter(i => i.statut === 'terminee');
     return list;
   }
 
-  function renderHostList(list) {
+  function renderList(list) {
     const container = document.getElementById('interventions-list');
     if (!list.length) {
       container.innerHTML = `
         <div class="empty-state">
-          <div class="empty-state__icon">🗓️</div>
+          <div class="empty-state__icon">${role === 'host' ? '🗓️' : '✅'}</div>
           <p>Aucune intervention trouvée.</p>
         </div>`;
       return;
     }
-    container.innerHTML = list.map(item => {
-      const d     = new Date(item.date_intervention);
-      const day   = isNaN(d) ? '—' : String(d.getDate()).padStart(2, '0');
-      const month = isNaN(d) ? '—' : d.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '');
+    container.innerHTML = list.map((item, i) => {
+      const today    = isToday(item.date_intervention);
+      const d        = new Date(item.date_intervention);
+      const day      = isNaN(d) ? '—' : String(d.getDate()).padStart(2, '0');
+      const month    = isNaN(d) ? '—' : d.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '');
       const typeLabel = { standard: 'Standard', grand_menage: 'Grand ménage', controle: 'Contrôle' }[item.type] || item.type;
       return `
-        <article class="intervention-card" data-id="${item.id}" role="listitem" tabindex="0">
+        <article class="glass-card intervention-card animate-fade-in-up stagger-${Math.min(i, 4) + 1}${today ? ' today-card' : ''}" data-id="${item.id}" role="listitem" tabindex="0">
           <div class="intervention-card__top">
-            <div>
+            <div class="intervention-card__info">
+              ${today ? '<div class="today-label">Aujourd\'hui</div>' : ''}
               <div class="intervention-card__logement">${item.client_nom || '—'}</div>
               <div class="intervention-card__meta">
-                <span>${typeLabel}</span>
+                ${role === 'host' ? `<span>${typeLabel}</span>` : ''}
                 ${item.heure_debut ? `<span>·</span><span>${item.heure_debut}–${item.heure_fin}</span>` : ''}
+                ${role === 'agent' && item.date_depart ? `<span>·</span><span>séjour jusqu'au ${formatDateShort(item.date_depart)}</span>` : ''}
               </div>
             </div>
             <div class="date-badge">
@@ -88,17 +115,23 @@ window.initHostDashboard = async function () {
             </div>
           </div>
           <div class="intervention-card__bottom">
-            <div class="intervention-card__agent">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-              ${item.agentName || 'Non assigné'}
-            </div>
+            ${role === 'host'
+              ? `<div class="intervention-card__agent">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                  ${item.agentName || 'Non assigné'}
+                </div>`
+              : `<span class="intervention-card__agent">${item.heure_depart ? `Départ client : ${item.heure_depart}` : ''}</span>`
+            }
             ${statutBadge(item.statut)}
           </div>
         </article>`;
     }).join('');
 
     container.querySelectorAll('.intervention-card').forEach(card => {
-      const go = () => { window.location.hash = `#/host/reservation/${card.dataset.id}`; };
+      const hash = role === 'host'
+        ? `#/host/reservation/${card.dataset.id}`
+        : `#/agent/intervention/${card.dataset.id}`;
+      const go = () => { window.location.hash = hash; };
       card.addEventListener('click', go);
       card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') go(); });
     });
@@ -152,7 +185,6 @@ window.initHostNewReservation = async function () {
 
   inputDepart.addEventListener('change', () => {
     updateNuits();
-    // date_intervention = date_depart par défaut
     if (!inputDateInt.value) inputDateInt.value = inputDepart.value;
   });
 
@@ -328,96 +360,6 @@ window.initHostDetail = async function () {
 };
 
 /* ---------------------------------------------------------- */
-/*  Dashboard Agent                                           */
-/* ---------------------------------------------------------- */
-window.initAgentDashboard = async function () {
-  const name = session.get('name') || 'Agent';
-  setText('#header-user', name);
-  setText('#greeting-text', `Bonjour, ${name.split(' ')[0]} 👋`);
-  setText('#greeting-date', formatDay(new Date().toISOString()));
-
-  document.getElementById('btn-logout')?.addEventListener('click', logout);
-
-  let allInterventions = [];
-  let activeFilter = 'avenir';
-
-  document.querySelectorAll('.filter-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.filter-tab').forEach(t => {
-        t.classList.remove('active');
-        t.setAttribute('aria-selected', 'false');
-      });
-      tab.classList.add('active');
-      tab.setAttribute('aria-selected', 'true');
-      activeFilter = tab.dataset.filter;
-      renderAgentList(filterBy(allInterventions, activeFilter));
-    });
-  });
-
-  try {
-    const res = await getInterventions();
-    allInterventions = res?.interventions || [];
-    renderAgentList(filterBy(allInterventions, activeFilter));
-    requestNotificationPermission(session.get('userId')).catch(() => null);
-  } catch {
-    document.getElementById('interventions-list').innerHTML =
-      '<div class="empty-state"><p>Impossible de charger les interventions.</p></div>';
-    toast('Erreur de chargement', 'error');
-  }
-
-  function filterBy(list, f) {
-    if (f === 'avenir')    return list.filter(i => i.statut !== 'terminee' && i.statut !== 'annulee');
-    if (f === 'terminees') return list.filter(i => i.statut === 'terminee');
-    return list;
-  }
-
-  function renderAgentList(list) {
-    const container = document.getElementById('interventions-list');
-    if (!list.length) {
-      container.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-state__icon">✅</div>
-          <p>Aucune intervention ici.</p>
-        </div>`;
-      return;
-    }
-    container.innerHTML = list.map(item => {
-      const today  = isToday(item.date_intervention);
-      const d      = new Date(item.date_intervention);
-      const day    = isNaN(d) ? '—' : String(d.getDate()).padStart(2, '0');
-      const month  = isNaN(d) ? '—' : d.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '');
-      return `
-        <article class="intervention-card${today ? ' today-card' : ''}" data-id="${item.id}" role="listitem" tabindex="0">
-          <div class="intervention-card__top">
-            <div>
-              ${today ? '<div style="font-size:0.75rem;font-weight:700;letter-spacing:0.05em;opacity:0.8;margin-bottom:4px;text-transform:uppercase;">Aujourd\'hui</div>' : ''}
-              <div class="intervention-card__logement">${item.client_nom || '—'}</div>
-              <div class="intervention-card__meta">
-                ${item.heure_debut ? `<span>${item.heure_debut}–${item.heure_fin}</span>` : ''}
-                ${item.date_arrivee ? `<span>·</span><span>séjour jusqu'au ${formatDateShort(item.date_depart)}</span>` : ''}
-              </div>
-            </div>
-            <div class="date-badge">
-              <span class="date-badge__day">${day}</span>
-              <span>${month}</span>
-            </div>
-          </div>
-          <div class="intervention-card__bottom">
-            <span class="intervention-card__nuits">${item.heure_depart ? `Départ client : ${item.heure_depart}` : ''}</span>
-            ${statutBadge(item.statut)}
-          </div>
-        </article>`;
-    }).join('');
-
-    container.querySelectorAll('.intervention-card').forEach(card => {
-      const go = () => { window.location.hash = `#/agent/intervention/${card.dataset.id}`; };
-      card.addEventListener('click', go);
-      card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') go(); });
-    });
-  }
-};
-
-/* ---------------------------------------------------------- */
 /*  Détail intervention Agent                                 */
 /* ---------------------------------------------------------- */
 window.initAgentDetail = async function () {
@@ -467,7 +409,7 @@ window.initAgentDetail = async function () {
       <div class="info-block">
         <div class="info-block__title">Intervention du ${formatDate(item.date_intervention)}</div>
         <div class="info-block__body">
-          <div class="detail-row"><span class="detail-label">Horaires</span><span class="detail-value" style="font-weight:600;color:var(--c-primary);">${item.heure_debut || '—'} – ${item.heure_fin || '—'}</span></div>
+          <div class="detail-row"><span class="detail-label">Horaires</span><span class="detail-value" style="font-weight:600;color:var(--accent);">${item.heure_debut || '—'} – ${item.heure_fin || '—'}</span></div>
           <div class="detail-row"><span class="detail-label">Type</span><span class="detail-value">${typeLabel}</span></div>
           <div class="detail-row"><span class="detail-label">Départ client</span><span class="detail-value" style="font-weight:600;">${item.heure_depart || '—'}</span></div>
           ${item.remarques ? `<div class="detail-row"><span class="detail-label">Instructions</span><span class="detail-value" style="white-space:pre-line;">${item.remarques}</span></div>` : ''}
@@ -478,7 +420,7 @@ window.initAgentDetail = async function () {
       <div class="info-block" style="margin-top:12px;">
         <div class="info-block__title">Linge à préparer</div>
         <div class="info-block__body">
-          <p style="color:var(--c-text-2,#6B7280);font-size:0.875rem;line-height:1.6;">${lingeDisplay}</p>
+          <p style="color:var(--text-secondary);font-size:0.875rem;line-height:1.6;">${lingeDisplay}</p>
         </div>
       </div>` : ''}
 
@@ -495,7 +437,7 @@ window.initAgentDetail = async function () {
         ${item.cloture.remarque ? `<div class="compte-rendu-note">${item.cloture.remarque}</div>` : ''}
         ${item.cloture.signalements?.length ? `
         <div style="margin-top:10px;">
-          <p style="font-size:0.75rem;font-weight:600;color:var(--c-warning);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">Signalements</p>
+          <p style="font-size:0.75rem;font-weight:600;color:var(--warning);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">Signalements</p>
           <div style="display:flex;flex-wrap:wrap;gap:6px;">
             ${item.cloture.signalements.map(s => `<span class="badge badge--warning">${s}</span>`).join('')}
           </div>

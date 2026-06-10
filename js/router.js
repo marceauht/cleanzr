@@ -5,11 +5,11 @@
 
 const Router = {
   routes: {
-    'host/dashboard':       'pages/host-dashboard.html',
+    'host/dashboard':       'pages/dashboard.html',
     'host/reservation/new': 'pages/host-new-reservation.html',
-    'host/reservation':     'pages/host-detail.html',    // host/reservation/:id
-    'agent/dashboard':      'pages/agent-dashboard.html',
-    'agent/intervention':   'pages/agent-detail.html',   // agent/intervention/:id
+    'host/reservation':     'pages/host-detail.html',
+    'agent/dashboard':      'pages/dashboard.html',
+    'agent/intervention':   'pages/agent-detail.html',
   },
 
   /* --- Résolution de route -------------------------------- */

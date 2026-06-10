@@ -1,0 +1,187 @@
+/* ============================================================
+   design-system.css — Tokens, variables et composants de base
+   ============================================================ */
+
+:root {
+  --bg-primary:     #F8F9FA;
+  --bg-primary-rgb: 248,249,250;
+  --bg-surface:     rgba(255,255,255,0.72);
+  --bg-surface-2:   rgba(255,255,255,0.50);
+  --bg-glass:       rgba(255,255,255,0.60);
+  --border-color:   rgba(0,0,0,0.08);
+  --border-glass:   rgba(255,255,255,0.50);
+  --text-primary:   #0F1117;
+  --text-secondary: #6B7280;
+  --text-tertiary:  #9CA3AF;
+  --accent:         #3B5BDB;
+  --accent-2:       #5C7CFA;
+  --accent-light:   #74C0FC;
+  --accent-bg:      rgba(59,91,219,0.08);
+  --accent-shadow:  rgba(59,91,219,0.25);
+  --success:        #10B981;
+  --success-bg:     rgba(16,185,129,0.10);
+  --danger:         #EF4444;
+  --danger-bg:      rgba(239,68,68,0.10);
+  --warning:        #F59E0B;
+  --warning-bg:     rgba(245,158,11,0.10);
+  --shadow-sm:      0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:      0 4px 16px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+  --shadow-lg:      0 8px 32px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-accent:  0 4px 20px rgba(59,91,219,0.30);
+  --radius-sm:      10px;
+  --radius-md:      16px;
+  --radius-lg:      24px;
+  --radius-xl:      32px;
+  --blur:           blur(20px);
+  --transition:           0.2s cubic-bezier(0.4,0,0.2,1);
+  --transition-spring:    0.35s cubic-bezier(0.34,1.56,0.64,1);
+  --font-body:    'Inter', system-ui, sans-serif;
+  --font-heading: 'Sora',  system-ui, sans-serif;
+  --max-w:    640px;
+  --header-h: 60px;
+}
+
+[data-theme="dark"] {
+  --bg-primary:     #0A0A0F;
+  --bg-primary-rgb: 10,10,15;
+  --bg-surface:     rgba(255,255,255,0.06);
+  --bg-surface-2:   rgba(255,255,255,0.04);
+  --bg-glass:       rgba(255,255,255,0.08);
+  --border-color:   rgba(255,255,255,0.08);
+  --border-glass:   rgba(255,255,255,0.12);
+  --text-primary:   #F1F3F5;
+  --text-secondary: #9CA3AF;
+  --text-tertiary:  #6B7280;
+  --accent:         #4C6EF5;
+  --accent-2:       #6B83F7;
+  --accent-light:   #74C0FC;
+  --accent-bg:      rgba(76,110,245,0.15);
+  --accent-shadow:  rgba(76,110,245,0.35);
+  --shadow-sm:      0 1px 3px rgba(0,0,0,0.30);
+  --shadow-md:      0 4px 16px rgba(0,0,0,0.40);
+  --shadow-lg:      0 8px 32px rgba(0,0,0,0.50);
+  --shadow-accent:  0 4px 20px rgba(76,110,245,0.40);
+}
+
+/* --- Glass card ------------------------------------------- */
+.glass-card {
+  background: var(--bg-glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+/* --- Buttons ---------------------------------------------- */
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 14px 24px;
+  font-weight: 600;
+  font-size: 15px;
+  width: 100%;
+  cursor: pointer;
+  box-shadow: var(--shadow-accent);
+  transition: transform var(--transition), opacity var(--transition);
+  transform: translateY(0);
+  font-family: var(--font-body);
+}
+.btn-primary:hover  { transform: translateY(-1px); opacity: 0.92; }
+.btn-primary:active { transform: translateY(0) scale(0.98); }
+.btn-primary:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+.btn-secondary {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 12px 20px;
+  font-weight: 500;
+  cursor: pointer;
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  transition: opacity var(--transition), transform var(--transition);
+  font-family: var(--font-body);
+}
+.btn-secondary:hover  { opacity: 0.85; }
+.btn-secondary:active { transform: scale(0.97); }
+
+/* --- Input ------------------------------------------------ */
+.input {
+  width: 100%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 13px 16px;
+  font-size: 15px;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  transition: border-color var(--transition), box-shadow var(--transition);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  appearance: none;
+  -webkit-appearance: none;
+}
+.input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-bg);
+  outline: none;
+}
+.input::placeholder { color: var(--text-tertiary); }
+
+/* --- Badge ------------------------------------------------ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+.badge--primary   { color: var(--accent);         background: var(--accent-bg);  }
+.badge--accent    { color: var(--accent-light);    background: var(--accent-bg);  }
+.badge--success   { color: var(--success);         background: var(--success-bg); }
+.badge--warning   { color: var(--warning);         background: var(--warning-bg); }
+.badge--danger    { color: var(--danger);          background: var(--danger-bg);  }
+.badge--neutral   { color: var(--text-secondary);  background: var(--border-color); }
+.badge--avenir    { color: var(--accent);          background: var(--accent-bg);  }
+.badge--terminee  { color: var(--success);         background: var(--success-bg); }
+.badge--annulee   { color: var(--danger);          background: var(--danger-bg);  }
+.badge--en_attente { color: var(--warning);        background: var(--warning-bg); }
+
+/* --- Animations ------------------------------------------ */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in-up { animation: fadeInUp 0.4s var(--transition) both; }
+.animate-fade-in    { animation: fadeIn   0.3s ease both; }
+.animate-scale-in   { animation: scaleIn  0.3s var(--transition) both; }
+
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.10s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.20s; }
+.stagger-5 { animation-delay: 0.25s; }

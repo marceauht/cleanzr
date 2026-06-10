@@ -20,7 +20,7 @@
     <form id="reservation-form" novalidate>
 
       <!-- 1. Source -->
-      <div class="form-section">
+      <div class="glass-card form-section">
         <p class="form-section__title">Source</p>
         <div class="form-stack">
 
@@ -54,7 +54,7 @@
       </div>
 
       <!-- 2. Voyageur -->
-      <div class="form-section">
+      <div class="glass-card form-section">
         <p class="form-section__title">Voyageur</p>
         <div class="form-stack">
 
@@ -79,14 +79,14 @@
 
           <div class="form-group">
             <span class="form-label">Options séjour</span>
-            <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px;">
-              <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
-                <input type="checkbox" id="toggle-animaux" style="width:18px;height:18px;accent-color:var(--c-primary,#3B5BDB)">
+            <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px;">
+              <label class="toggle-label">
                 <span>Animaux de compagnie</span>
+                <input type="checkbox" id="toggle-animaux" class="toggle-input">
               </label>
-              <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
-                <input type="checkbox" id="toggle-lit-bebe" style="width:18px;height:18px;accent-color:var(--c-primary,#3B5BDB)">
+              <label class="toggle-label">
                 <span>Lit bébé nécessaire</span>
+                <input type="checkbox" id="toggle-lit-bebe" class="toggle-input">
               </label>
             </div>
           </div>
@@ -95,7 +95,7 @@
       </div>
 
       <!-- 3. Séjour -->
-      <div class="form-section">
+      <div class="glass-card form-section">
         <p class="form-section__title">Séjour</p>
         <div class="form-stack">
 
@@ -130,7 +130,7 @@
       </div>
 
       <!-- 4. Intervention -->
-      <div class="form-section">
+      <div class="glass-card form-section">
         <p class="form-section__title">Intervention</p>
         <div class="form-stack">
 
@@ -170,7 +170,7 @@
       </div>
 
       <!-- 5. Linge -->
-      <div class="form-section">
+      <div class="glass-card form-section">
         <p class="form-section__title">Linge à prévoir</p>
         <div class="form-stack">
           <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
@@ -211,7 +211,7 @@
       </div>
 
       <!-- 6. Remarques -->
-      <div class="form-section">
+      <div class="glass-card form-section">
         <p class="form-section__title">Remarques pour l'agent</p>
         <div class="form-stack">
           <div class="form-group">

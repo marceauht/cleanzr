@@ -1,0 +1,65 @@
+<div class="page-wrapper" data-init="initDashboard">
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-left">
+      <span class="header-logo">Cleanzr</span>
+    </div>
+    <div class="header-right">
+      <button class="btn-icon-glass" id="btn-theme" aria-label="Changer de thème">🌙</button>
+      <button class="btn-icon-glass" id="btn-logout" aria-label="Déconnexion">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="page-content">
+
+    <!-- Greeting -->
+    <div class="greeting animate-fade-in-up stagger-1">
+      <div class="greeting__hello" id="greeting-text">Bonjour 👋</div>
+      <div class="greeting__sub" id="greeting-date"></div>
+    </div>
+
+    <!-- Stats (hôte uniquement) -->
+    <section id="stats-section" class="stats-row animate-fade-in-up stagger-2" hidden>
+      <div class="glass-card stat-card">
+        <span class="stat-value" id="stat-total">—</span>
+        <span class="stat-label">Total</span>
+      </div>
+      <div class="glass-card stat-card">
+        <span class="stat-value" id="stat-avenir">—</span>
+        <span class="stat-label">À venir</span>
+      </div>
+      <div class="glass-card stat-card">
+        <span class="stat-value" id="stat-terminees">—</span>
+        <span class="stat-label">Terminées</span>
+      </div>
+    </section>
+
+    <!-- Filtres -->
+    <div class="filter-row animate-fade-in-up stagger-3">
+      <div class="filter-tabs" role="tablist" aria-label="Filtrer les interventions">
+        <button class="filter-tab" data-filter="avenir" role="tab" aria-selected="false">À venir</button>
+        <button class="filter-tab" data-filter="terminees" role="tab" aria-selected="false">Terminées</button>
+        <button class="filter-tab" data-filter="all" role="tab" aria-selected="false">Toutes</button>
+      </div>
+    </div>
+
+    <!-- Liste interventions -->
+    <div id="interventions-list" class="interventions-list animate-fade-in-up stagger-4">
+      <div class="page-loading"><div class="spinner"></div></div>
+    </div>
+
+  </main>
+
+  <!-- FAB nouvelle réservation (hôte uniquement) -->
+  <button id="btn-new" class="fab" hidden aria-label="Nouvelle réservation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+  </button>
+
+</div>
