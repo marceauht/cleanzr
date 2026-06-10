@@ -215,10 +215,6 @@ window.initHostNewReservation = async function () {
     btn.textContent = 'Création en cours…';
 
     try {
-      console.log('DATA ENVOYÉE:', JSON.stringify({
-        client_nom, date_arrivee, date_depart, agent_id, date_intervention
-      }));
-
       const res = await creerReservation({
         logement_id, plateforme, ref_reservation, statut_reservation,
         client_nom, client_tel, nb_voyageurs: nbVoyageurs, animaux, lit_bebe,

@@ -8,15 +8,15 @@ let _handlerRegistered = false;
 /* --- Initialise Firebase + SW + récupère le token FCM ----- */
 window.initFCM = async function () {
   if (!('serviceWorker' in navigator) || !('Notification' in window)) {
-    toast('FCM: serviceWorker ou Notification non supporté', 'error');
+    console.warn('[FCM] serviceWorker ou Notification non supporté');
     return null;
   }
   if (!window.FIREBASE_CONFIG) {
-    toast('FCM: FIREBASE_CONFIG manquant', 'error');
+    console.warn('[FCM] FIREBASE_CONFIG non disponible');
     return null;
   }
   if (!window.FCM_VAPID_KEY || window.FCM_VAPID_KEY === 'REMPLACER') {
-    toast('FCM: FCM_VAPID_KEY manquant', 'error');
+    console.warn('[FCM] FCM_VAPID_KEY non configurée — tokens FCM désactivés');
     return null;
   }
 
@@ -35,7 +35,7 @@ window.initFCM = async function () {
     await navigator.serviceWorker.register('/service-worker.js');
     activeReg = await navigator.serviceWorker.ready;
   } catch (err) {
-    toast('Erreur FCM: ' + err.message, 'error');
+    console.warn('[FCM] SW registration error :', err);
     return null;
   }
 
@@ -52,7 +52,7 @@ window.initFCM = async function () {
       serviceWorkerRegistration: activeReg,
     });
   } catch (err) {
-    toast('Erreur FCM: ' + err.message, 'error');
+    console.warn('[FCM] getToken error :', err);
     return null;
   }
 
@@ -72,24 +72,15 @@ window.requestNotificationPermission = async function (userId) {
 
   try {
     const permission = await Notification.requestPermission();
-    toast('Permission: ' + permission, 'info');
     if (permission !== 'granted') return false;
 
     const token = await window.initFCM();
-    if (!token) {
-      toast('Token NULL — initFCM a échoué', 'error');
-      return false;
-    }
-    toast('Token OK: ' + token.slice(0, 20) + '...', 'success');
+    if (!token) return false;
 
     const saved = session.get('fcmToken');
     if (saved !== token) {
       const res = await saveFcmToken(token).catch(err => ({ success: false, error: err.message }));
-      if (res && res.success) {
-        toast('Token enregistré en base ✓', 'success');
-      } else {
-        toast('Erreur enregistrement: ' + JSON.stringify(res), 'error');
-      }
+      if (res && !res.success) console.warn('[FCM] Token save failed :', res);
       session.set('fcmToken', token);
     }
 

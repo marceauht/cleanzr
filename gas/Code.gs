@@ -11,7 +11,7 @@ const SHEET_RESERVATIONS  = 'Reservations';
 const SHEET_INTERVENTIONS = 'Interventions';
 const SHEET_CLOTURES      = 'Clotures';
 const SHEET_NOTIFICATIONS = 'Notifications';
-const FCM_SERVER_KEY      = 'BGe7mThsyYutHbdeqjVfRRcLKTvJO3AQVAfj2n-fULIdmDNpKurZMBarKOCttQ5R3jnEspn2pzFb4of_vJcaEow';
+const FCM_PROJECT_ID      = 'cleanzr';
 
 // ============================================================
 //  POINTS D'ENTRÉE
@@ -369,12 +369,9 @@ function cloturerIntervention(id, data) {
   if (intervention) {
     const reservations = getRows(SHEET_RESERVATIONS);
     const res          = reservations.find(r => String(r.id) === String(intervention.reservation_id));
-    const users        = getRows(SHEET_UTILISATEURS);
-    users.filter(u => String(u.role) === 'host' && u.fcm_token).forEach(host => {
-      sendNotificationToUser_(String(host.fcm_token), {
-        title: '✅ Intervention terminée',
-        body:  (res ? String(res.client_nom) : '') + ' — ménage clôturé',
-      });
+    sendNotificationToHost_({
+      title: '✅ Intervention terminée',
+      body:  (res ? String(res.client_nom) : '') + ' — ménage clôturé',
     });
   }
 
@@ -404,31 +401,60 @@ function saveFcmToken(token, userId) {
 }
 
 // ============================================================
-//  NOTIFICATIONS FCM
+//  NOTIFICATIONS FCM — HTTP V1
 // ============================================================
+
+function sendPush_(fcmToken, title, body, data) {
+  if (!fcmToken || !fcmToken.trim()) return;
+
+  const url     = 'https://fcm.googleapis.com/v1/projects/' + FCM_PROJECT_ID + '/messages:send';
+  const token   = ScriptApp.getOAuthToken();
+
+  const payload = {
+    message: {
+      token:        fcmToken,
+      notification: { title: String(title), body: String(body) },
+      data:         data || {},
+      webpush: {
+        notification: {
+          title: String(title),
+          body:  String(body),
+          icon:  '/assets/icons/icon-192.png',
+        },
+        fcm_options: {
+          link: 'https://cleanzr.gite-refugedesaintines.com',
+        },
+      },
+      apns: {
+        payload: {
+          aps: {
+            alert: { title: String(title), body: String(body) },
+            sound: 'default',
+          },
+        },
+      },
+    },
+  };
+
+  try {
+    const res = UrlFetchApp.fetch(url, {
+      method:      'post',
+      contentType: 'application/json',
+      headers:     { Authorization: 'Bearer ' + token },
+      payload:     JSON.stringify(payload),
+      muteHttpExceptions: true,
+    });
+    Logger.log('[FCM V1] Status: ' + res.getResponseCode() + ' — ' + res.getContentText());
+  } catch (err) {
+    Logger.log('[FCM V1] Erreur: ' + err.message);
+  }
+}
 
 function sendNotificationToAgent_(agentId, notification) {
   const users = getRows(SHEET_UTILISATEURS);
   const agent = users.find(u => String(u.id) === String(agentId));
   if (!agent || !agent.fcm_token) return;
-  sendNotificationToUser_(String(agent.fcm_token), notification);
-}
-
-function sendNotificationToUser_(fcmToken, notification) {
-  if (!fcmToken || FCM_SERVER_KEY === 'REMPLACER') return;
-  UrlFetchApp.fetch('https://fcm.googleapis.com/fcm/send', {
-    method:  'post',
-    headers: {
-      'Content-Type':  'application/json',
-      'Authorization': 'key=' + FCM_SERVER_KEY,
-    },
-    payload: JSON.stringify({
-      to:           fcmToken,
-      notification: { title: notification.title, body: notification.body },
-      data:         { url: '/#/agent/dashboard' },
-    }),
-    muteHttpExceptions: true,
-  });
+  sendPush_(String(agent.fcm_token), notification.title, notification.body, { url: '/#/agent/dashboard' });
 }
 
 // ============================================================
@@ -498,7 +524,7 @@ function sendNotificationToHost_(notification) {
   const users = getRows(SHEET_UTILISATEURS);
   users
     .filter(u => String(u.role) === 'host' && u.fcm_token)
-    .forEach(host => sendNotificationToUser_(String(host.fcm_token), notification));
+    .forEach(host => sendPush_(String(host.fcm_token), notification.title, notification.body, { url: '/#/host/dashboard' }));
 }
 
 // ============================================================
@@ -602,4 +628,21 @@ function installerTriggers() {
     .create();
 
   Logger.log('Triggers installés : rappels quotidiens 8h + récap dimanche 19h');
+}
+
+// ============================================================
+//  TEST NOTIFICATIONS (à exécuter manuellement)
+// ============================================================
+
+function testerNotification() {
+  const users = getRows(SHEET_UTILISATEURS);
+  const user  = users.find(u => u.fcm_token && String(u.fcm_token).trim());
+  if (!user) { Logger.log('Aucun token trouvé'); return; }
+  sendPush_(
+    String(user.fcm_token),
+    '🧪 Test Cleanzr',
+    'Si tu vois ça, les notifications fonctionnent !',
+    {}
+  );
+  Logger.log('Notification envoyée à ' + user.nom);
 }

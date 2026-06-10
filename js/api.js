@@ -22,26 +22,6 @@ async function gasRequest(action, params = {}) {
   return res.json();
 }
 
-/* --- POST JSON body (pour données volumineuses) ------------ */
-async function gasPost(action, body = {}) {
-  if (GAS_URL === 'REMPLACER') return { success: false, error: 'GAS_URL non configurée' };
-
-  const userId  = session.get('userId');
-  const payload = JSON.stringify({ action, userId, ...body });
-
-  // Content-Type: text/plain évite le preflight CORS sur les GAS publics
-  const res = await fetch(GAS_URL, {
-    method:   'POST',
-    redirect: 'follow',
-    headers:  { 'Content-Type': 'text/plain' },
-    body:     payload,
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status} — ${res.statusText}`);
-  const ct = res.headers.get('content-type') || '';
-  if (!ct.includes('application/json')) throw new Error('Réponse inattendue du serveur (non-JSON)');
-  return res.json();
-}
-
 /* --- Auth ------------------------------------------------- */
 async function verifierPin(pinHash) {
   return gasRequest('verifierPin', { pinHash });
@@ -69,7 +49,7 @@ async function getIntervention(id) {
   return gasRequest('getIntervention', { id });
 }
 
-/* --- Réservation (POST — payload linge potentiellement gros) */
+/* --- Réservation ------------------------------------------ */
 async function creerReservation(data) {
   const userId = session.get('userId');
   const url = new URL(GAS_URL);
@@ -80,7 +60,7 @@ async function creerReservation(data) {
   return res.json();
 }
 
-/* --- Clôture (POST — payload photos base64) --------------- */
+/* --- Clôture ---------------------------------------------- */
 async function cloturerIntervention(id, data) {
   const userId = session.get('userId');
   const url = new URL(GAS_URL);
