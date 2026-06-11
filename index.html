@@ -12,8 +12,35 @@
   <title>Cleanzr</title>
 
   <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+  
+  <!-- iPhone / iPad -->
+  <link
+    rel="apple-touch-icon"
+    href="assets/icons/classic_pwa_pack/ios/180.png"
+  >
+
+  <!-- Favicon mode clair -->
+  <link
+    rel="icon"
+    type="image/png"
+    href="assets/icons/clear_pwa_pack/android/launchericon-192x192.png"
+    media="(prefers-color-scheme: light)"
+  >
+
+  <!-- Favicon mode sombre -->
+  <link
+    rel="icon"
+    type="image/png"
+    href="assets/icons/dark_pwa_pack/android/launchericon-192x192.png"
+    media="(prefers-color-scheme: dark)"
+  >
+
+  <!-- Fallback -->
+  <link
+    rel="icon"
+    type="image/png"
+    href="assets/icons/classic_pwa_pack/android/launchericon-192x192.png"
+  >
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
