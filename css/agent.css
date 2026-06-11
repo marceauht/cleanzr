@@ -119,7 +119,7 @@
 }
 .photo-drop-zone:hover { border-color: var(--accent); background: var(--accent-bg); }
 
-.photo-drop-zone__icon { font-size: 1.75rem; margin-bottom: 6px; opacity: 0.5; }
+.photo-drop-zone__icon { width: 32px; height: 32px; margin: 0 auto 8px; opacity: 0.45; }
 .photo-drop-zone__text { font-weight: 500; }
 .photo-drop-zone__hint { font-size: 0.75rem; margin-top: 2px; }
 

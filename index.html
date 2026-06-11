@@ -47,29 +47,29 @@
         <!-- PANEL A : Création de profil (Flux 1) -->
         <div id="panel-creation" class="auth-panel" hidden>
           <h2 class="auth-step-title">Créer mon profil</h2>
-          <p class="auth-step-sub">Choisissez votre rôle et définissez un code PIN.</p>
+          <p class="auth-step-sub">Choisissez votre rôle et définissez<br>un code PIN.</p>
 
           <div class="role-selector">
             <button class="role-btn" data-role="host">
-              <span class="role-btn__icon">🏠</span>
+              <svg class="role-btn__icon" xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" viewBox="0 0 256 256"><path d="M240,208H224V136l2.34,2.34A8,8,0,0,0,237.66,127L139.31,28.68a16,16,0,0,0-22.62,0L18.34,127a8,8,0,0,0,11.32,11.31L32,136v72H16a8,8,0,0,0,0,16H240a8,8,0,0,0,0-16ZM48,120l80-80,80,80v88H160V152a8,8,0,0,0-8-8H104a8,8,0,0,0-8,8v56H48Zm96,88H112V160h32Z"/></svg>
               <span class="role-btn__label">Hôte</span>
               <span class="role-btn__desc">Je gère des locations</span>
             </button>
             <button class="role-btn" data-role="agent">
-              <span class="role-btn__icon">🧽</span>
+              <svg class="role-btn__icon" xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" viewBox="0 0 256 256"><path d="M200,80a8,8,0,0,0,8-8,56.06,56.06,0,0,0-56-56H80A16,16,0,0,0,64,32V80a24,24,0,0,1-24,24,8,8,0,0,0,0,16A40,40,0,0,0,80,80h32v24.62a23.87,23.87,0,0,1-9,18.74L87,136.15a39.79,39.79,0,0,0-15,31.23V224a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V211.47A270.88,270.88,0,0,0,174,80ZM80,32h72a40.08,40.08,0,0,1,39.2,32H80ZM192,211.47V224H88V167.38a23.87,23.87,0,0,1,9-18.74l16-12.79a39.79,39.79,0,0,0,15-31.23V80h27.52A254.86,254.86,0,0,1,192,211.47Z"/></svg>
               <span class="role-btn__label">Agent</span>
               <span class="role-btn__desc">J'effectue les ménages</span>
             </button>
           </div>
 
           <div class="form-group" style="width:100%;">
-            <label class="form-label" for="input-nom">Votre prénom ou nom</label>
-            <input class="input" id="input-nom" type="text" placeholder="Ex : Marie"
+            <label class="form-label" for="input-nom"> Votre prénom et nom</label>
+            <input class="input" id="input-nom" type="text" placeholder="Ex : Marie Dupont"
                    autocomplete="off" autocorrect="off" spellcheck="false" maxlength="40">
           </div>
 
           <button class="btn btn--primary btn--full" id="btn-creation-next">
-            Choisir mon code PIN →
+            Choisir mon code PIN
           </button>
 
           <button class="btn-link" id="btn-deja-acces">J'ai déjà un accès</button>
@@ -101,10 +101,16 @@
             <button class="pin-key" data-key="9" aria-label="9">9</button>
             <button class="pin-key pin-key--empty" aria-hidden="true" tabindex="-1"></button>
             <button class="pin-key" data-key="0" aria-label="0">0</button>
-            <button class="pin-key pin-key--delete" id="pin-delete" aria-label="Effacer">⌫</button>
+            <button class="pin-key pin-key--delete" id="pin-delete" aria-label="Effacer">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 256 256"><path d="M216,40H68.53a16,16,0,0,0-12.29,5.76l-55.42,68a15.93,15.93,0,0,0,0,20.48l55.42,68A16,16,0,0,0,68.53,208H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,152H68.53l-55.42-68,55.42-68H216ZM149.66,154.34a8,8,0,0,1-11.32,11.32L120,147.31l-18.34,18.35a8,8,0,0,1-11.32-11.32L108.69,136,90.34,117.66a8,8,0,0,1,11.32-11.32L120,124.69l18.34-18.35a8,8,0,0,1,11.32,11.32L131.31,136Z"/></svg>
+            </button>
           </div>
 
           <button class="btn-link" id="pin-secondary-btn" hidden></button>
+          <button class="btn btn--primary btn--full" id="btn-change-profile" hidden>
+            Changer de profil
+          </button>
+
         </div>
 
         <!-- PANEL C : PIN oublié — saisie du nom (Flux 4 étape 1) -->
@@ -113,16 +119,16 @@
           <p class="auth-step-sub">Entrez votre nom pour retrouver votre accès.</p>
 
           <div class="form-group" style="width:100%;">
-            <label class="form-label" for="input-forgot-nom">Votre prénom ou nom</label>
-            <input class="input" id="input-forgot-nom" type="text" placeholder="Ex : Marie"
+            <label class="form-label" for="input-forgot-nom"> Votre prénom et nom</label>
+            <input class="input" id="input-forgot-nom" type="text" placeholder="Ex : Marie Dupont"
                    autocomplete="off" autocorrect="off" spellcheck="false" maxlength="40">
           </div>
 
           <button class="btn btn--primary btn--full" id="btn-forgot-nom-next">
-            Vérifier →
+            Vérifier
           </button>
 
-          <button class="btn-link" id="btn-forgot-back">← Retour</button>
+          <button class="btn-link" id="btn-forgot-back">Retour</button>
         </div>
 
       </div><!-- /auth-panels -->

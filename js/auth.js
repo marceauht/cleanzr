@@ -84,76 +84,82 @@
 
   /* --- Machine d'états ----------------------------------- */
   function enterState(newState, data = {}) {
-    fadeTransition(() => {
-      state = newState;
-      clearPin();
-      setLabel('');
+  fadeTransition(() => {
+    state = newState;
+    clearPin();
+    setLabel('');
 
-      switch (newState) {
+    // Masque le bouton "Changer de profil" par défaut
+    const btnChange = document.getElementById('btn-change-profile');
+    if (btnChange) btnChange.hidden = true;
 
-        case S.CREATE_IDENTITY:
-          showPanel('panel-creation');
-          break;
+    switch (newState) {
 
-        case S.CREATE_PIN:
-          if (data.role) pendingRole = data.role;
-          if (data.nom)  pendingNom  = data.nom;
-          showPanel('panel-pin');
-          setGreeting(null);
-          setTitle('Choisissez votre code PIN');
-          setSecondary('← Retour', () => enterState(S.CREATE_IDENTITY));
-          break;
+      case S.CREATE_IDENTITY:
+        showPanel('panel-creation');
+        break;
 
-        case S.CREATE_CONFIRM:
-          if (data.pinHash) firstPinHash = data.pinHash;
-          showPanel('panel-pin');
-          setGreeting(null);
-          setTitle('Confirmez votre code PIN');
-          setSecondary('← Changer le PIN', () => enterState(S.CREATE_PIN));
-          break;
+      case S.CREATE_PIN:
+        if (data.role) pendingRole = data.role;
+        if (data.nom)  pendingNom  = data.nom;
+        showPanel('panel-pin');
+        setGreeting(null);
+        setTitle('Choisissez votre code PIN');
+        setSecondary('Retour', () => enterState(S.CREATE_IDENTITY));
+        break;
 
-        case S.LOGIN: {
-          const profile = getLocalProfile();
-          pendingNom = profile?.nom;
-          showPanel('panel-pin');
-          setGreeting(`Bonjour, ${(pendingNom || '').split(' ')[0] || 'vous'} 👋`);
-          setTitle('Entrez votre code PIN');
-          setSecondary('PIN oublié ?', () => enterState(S.FORGOT_NAME));
-          break;
-        }
+      case S.CREATE_CONFIRM:
+        if (data.pinHash) firstPinHash = data.pinHash;
+        showPanel('panel-pin');
+        setGreeting(null);
+        setTitle('Confirmez votre code PIN');
+        setSecondary('Changer le PIN', () => enterState(S.CREATE_PIN));
+        break;
 
-        case S.EXISTING_ACCESS:
-          showPanel('panel-pin');
-          setGreeting(null);
-          setTitle('Entrez votre code PIN');
-          setSecondary('← Retour', () => enterState(S.CREATE_IDENTITY));
-          break;
-
-        case S.FORGOT_NAME: {
-          showPanel('panel-forgot');
-          const fi = document.getElementById('input-forgot-nom');
-          if (fi) { fi.value = ''; setTimeout(() => fi.focus(), 220); }
-          break;
-        }
-
-        case S.FORGOT_NEW_PIN:
-          if (data.nom) forgotNom = data.nom;
-          showPanel('panel-pin');
-          setGreeting(null);
-          setTitle('Choisissez un nouveau code PIN');
-          setSecondary('← Retour', () => enterState(S.FORGOT_NAME));
-          break;
-
-        case S.FORGOT_CONFIRM:
-          if (data.pinHash) firstPinHash = data.pinHash;
-          showPanel('panel-pin');
-          setGreeting(null);
-          setTitle('Confirmez le nouveau code PIN');
-          setSecondary('← Retour', () => enterState(S.FORGOT_NEW_PIN, { nom: forgotNom }));
-          break;
+      case S.LOGIN: {
+        const profile = getLocalProfile();
+        pendingNom = profile?.nom;
+        showPanel('panel-pin');
+        setGreeting(`Bonjour ${(pendingNom || '').split(' ')[0] || 'vous'} 👋`);
+        setTitle('Entrez votre code PIN');
+        setSecondary('PIN oublié ?', () => enterState(S.FORGOT_NAME));
+        // Affiche le bouton "Changer de profil" sous le greeting
+        if (btnChange) btnChange.hidden = false;
+        break;
       }
-    });
-  }
+
+      case S.EXISTING_ACCESS:
+        showPanel('panel-pin');
+        setGreeting(null);
+        setTitle('Entrez votre code PIN');
+        setSecondary('Retour', () => enterState(S.CREATE_IDENTITY));
+        break;
+
+      case S.FORGOT_NAME: {
+        showPanel('panel-forgot');
+        const fi = document.getElementById('input-forgot-nom');
+        if (fi) { fi.value = ''; setTimeout(() => fi.focus(), 220); }
+        break;
+      }
+
+      case S.FORGOT_NEW_PIN:
+        if (data.nom) forgotNom = data.nom;
+        showPanel('panel-pin');
+        setGreeting(null);
+        setTitle('Choisissez un nouveau code PIN');
+        setSecondary('Retour', () => enterState(S.FORGOT_NAME));
+        break;
+
+      case S.FORGOT_CONFIRM:
+        if (data.pinHash) firstPinHash = data.pinHash;
+        showPanel('panel-pin');
+        setGreeting(null);
+        setTitle('Confirmez le nouveau code PIN');
+        setSecondary('Retour', () => enterState(S.FORGOT_NEW_PIN, { nom: forgotNom }));
+        break;
+    }
+  });
+}
 
   /* --- Helpers UI ---------------------------------------- */
   function clearPin() {
@@ -392,6 +398,12 @@
     document.getElementById('btn-deja-acces')?.addEventListener('click', () => {
       enterState(S.EXISTING_ACCESS);
     });
+
+    document.getElementById('btn-pin-oublie')?.addEventListener('click', () => enterState(S.FORGOT_NAME));
+    document.getElementById('btn-change-profile')?.addEventListener('click', () => {
+      localStorage.removeItem('czr_profile');
+      enterState(S.EXISTING_ACCESS);
+    });
   }
 
   /* --- Panel PIN oublié ---------------------------------- */
@@ -427,7 +439,7 @@
     } catch {
       toast('Erreur réseau — réessayez', 'error');
     } finally {
-      if (btn) { btn.disabled = false; btn.textContent = 'Vérifier →'; }
+      if (btn) { btn.disabled = false; btn.textContent = 'Vérifier'; }
     }
   }
 

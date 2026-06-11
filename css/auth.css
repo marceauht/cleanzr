@@ -39,7 +39,7 @@
   -webkit-backdrop-filter: var(--blur);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
-  padding: 32px;
+  padding: 32px 32px 14px;
   box-shadow: var(--shadow-lg);
   position: relative;
   z-index: 1;
@@ -161,6 +161,10 @@
 
 /* --- Auth spinner ----------------------------------------- */
 .auth-spinner {
+  position: absolute;
+  top: 60%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -168,6 +172,7 @@
   color: var(--text-secondary);
   font-size: 0.875rem;
   font-weight: 500;
+  z-index: 10;
 }
 
 /* --- Panels ----------------------------------------------- */
@@ -198,6 +203,7 @@
   color: var(--text-secondary);
   text-align: center;
   margin-top: -8px;
+  margin-bottom: 8px;
   line-height: 1.5;
 }
 
@@ -221,6 +227,8 @@
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   width: 100%;
+  margin-bottom: 8px;
+  margin-top: 12px;
 }
 
 .role-btn {
@@ -238,10 +246,21 @@
   transition: border-color var(--transition-spring), background var(--transition), transform var(--transition-spring);
   -webkit-tap-highlight-color: transparent;
 }
+
 .role-btn:active   { transform: scale(0.95); }
 .role-btn--active  { border-color: var(--accent); background: var(--accent-bg); }
 
-.role-btn__icon  { font-size: 2.5rem; line-height: 1; margin-bottom: 2px; }
+.role-btn__icon {
+  width: 32px;
+  height: 32px;
+  color: var(--text-secondary);
+  transition: color var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
+}
+.role-btn--active .role-btn__icon { color: var(--accent); }
 .role-btn__label { font-family: var(--font-heading); font-size: 0.9375rem; font-weight: 700; color: var(--text-primary); }
 .role-btn__desc  { font-size: 0.6875rem; color: var(--text-secondary); text-align: center; line-height: 1.35; }
 .role-btn--active .role-btn__label { color: var(--accent); }
@@ -255,9 +274,10 @@
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  padding: 8px 12px;
+  padding: 4px 12px;
   text-align: center;
   transition: opacity var(--transition);
   opacity: 0.85;
 }
+
 .btn-link:hover { opacity: 1; text-decoration: underline; }
