@@ -41,7 +41,6 @@ async function reinitialiserPin(nom, pinHash) {
 
 /* --- Interventions (GET) ---------------------------------- */
 async function getInterventions() {
-  // userId injecté automatiquement par gasRequest
   return gasRequest('getInterventions');
 }
 

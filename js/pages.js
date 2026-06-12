@@ -27,7 +27,6 @@ window.initDashboard = async function () {
   document.getElementById('btn-logout')?.addEventListener('click', logout);
 
   if (role === 'host') {
-    document.getElementById('stats-section')?.removeAttribute('hidden');
     const btnNew = document.getElementById('btn-new');
     if (btnNew) {
       btnNew.removeAttribute('hidden');
@@ -59,19 +58,25 @@ window.initDashboard = async function () {
   try {
     const res = await getInterventions();
     allInterventions = res?.interventions || [];
-    if (role === 'host') updateStats(allInterventions);
+    updateStats(allInterventions);
     renderList(filterBy(allInterventions, activeFilter));
     requestNotificationPermission(session.get('userId')).catch(() => null);
   } catch {
-    document.getElementById('interventions-list').innerHTML =
-      '<div class="empty-state"><p>Impossible de charger les interventions.</p></div>';
-    toast('Erreur de chargement', 'error');
-  }
+      const list = document.getElementById('interventions-list');
+      if (list) list.innerHTML = '<div class="empty-state"><p>Impossible de charger les interventions.</p></div>';
+      toast('Erreur de chargement', 'error');
+    }
 
   function updateStats(list) {
-    setText('#stat-total',     String(list.length));
-    setText('#stat-avenir',    String(list.filter(i => ['en_attente','confirmee','en_cours'].includes(i.statut)).length));
-    setText('#stat-terminees', String(list.filter(i => i.statut === 'terminee').length));
+    if (role === 'host') {
+      setText('#stat-total',     String(list.length));
+      setText('#stat-avenir',    String(list.filter(i => ['en_attente','confirmee','en_cours'].includes(i.statut)).length));
+      setText('#stat-terminees', String(list.filter(i => i.statut === 'terminee').length));
+    } else {
+      setText('#stat-total',     String(list.length));
+      setText('#stat-avenir',    String(list.filter(i => i.statut !== 'terminee' && i.statut !== 'annulee').length));
+      setText('#stat-terminees', String(list.filter(i => i.statut === 'terminee').length));
+    }
   }
 
   function filterBy(list, f) {
@@ -99,6 +104,9 @@ window.initDashboard = async function () {
       const d        = new Date(item.date_intervention);
       const day      = isNaN(d) ? '—' : String(d.getDate()).padStart(2, '0');
       const month    = isNaN(d) ? '—' : d.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '');
+      const hDebut  = formatHeure(item.heure_debut);
+      const hFin    = formatHeure(item.heure_fin);
+      const hDepart = formatHeure(item.heure_depart);
       const typeLabel = { standard: 'Standard', grand_menage: 'Grand ménage', controle: 'Contrôle' }[item.type] || item.type;
       return `
         <article class="glass-card intervention-card animate-fade-in-up stagger-${Math.min(i, 4) + 1}${today ? ' today-card' : ''}" data-id="${item.id}" role="listitem" tabindex="0">
@@ -108,7 +116,7 @@ window.initDashboard = async function () {
               <div class="intervention-card__logement">${item.client_nom || '—'}</div>
               <div class="intervention-card__meta">
                 ${role === 'host' ? `<span>${typeLabel}</span>` : ''}
-                ${item.heure_debut ? `<span>·</span><span>${item.heure_debut}–${item.heure_fin}</span>` : ''}
+                ${item.heure_debut ? `<span>·</span><span>${hDebut}–${hFin}</span>` : ''}
                 ${role === 'agent' && item.date_depart ? `<span>·</span><span>séjour jusqu'au ${formatDateShort(item.date_depart)}</span>` : ''}
               </div>
             </div>
@@ -121,9 +129,11 @@ window.initDashboard = async function () {
             ${role === 'host'
               ? `<div class="intervention-card__agent">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-                  ${item.agentName || 'Non assigné'}
+                  <span style="color:var(--accent);font-weight:500;">${item.agentName || 'Non assigné'}</span>
                 </div>`
-              : `<span class="intervention-card__agent">${item.heure_depart ? `Départ client : ${item.heure_depart}` : ''}</span>`
+              : `<div class="intervention-card__agent">
+                  ${hDepart !== '—' ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Départ client : <strong>${hDepart}</strong></span>` : '<span style="opacity:0.4;">Heure de départ non renseignée</span>'}
+                </div>`
             }
             ${statutBadge(item.statut)}
           </div>
@@ -300,8 +310,8 @@ window.initHostDetail = async function () {
           <div class="detail-row"><span class="detail-label">Voyageur</span><span class="detail-value">${item.client_nom || '—'}</span></div>
           ${item.client_tel ? `<div class="detail-row"><span class="detail-label">Téléphone</span><span class="detail-value">${item.client_tel}</span></div>` : ''}
           ${item.plateforme ? `<div class="detail-row"><span class="detail-label">Plateforme</span><span class="detail-value">${item.plateforme}${item.ref_reservation ? ' · ' + item.ref_reservation : ''}</span></div>` : ''}
-          <div class="detail-row"><span class="detail-label">Arrivée</span><span class="detail-value">${formatDate(item.date_arrivee)} à ${item.heure_arrivee || '—'}</span></div>
-          <div class="detail-row"><span class="detail-label">Départ</span><span class="detail-value">${formatDate(item.date_depart)} à ${item.heure_depart || '—'}</span></div>
+          <div class="detail-row"><span class="detail-label">Arrivée</span><span class="detail-value">${formatDate(item.date_arrivee)} à ${formatHeure(item.heure_arrivee)}</span></div>
+          <div class="detail-row"><span class="detail-label">Départ</span><span class="detail-value">${formatDate(item.date_depart)} à ${formatHeure(item.heure_depart)}</span></div>
           <div class="detail-row"><span class="detail-label">Durée</span><span class="detail-value">${pluriel(nuits, 'nuit', 'nuits')}</span></div>
           <div class="detail-row"><span class="detail-label">Voyageurs</span><span class="detail-value">${pluriel(item.nb_voyageurs || 1, 'voyageur', 'voyageurs')}${item.animaux ? ' · Animaux' : ''}${item.lit_bebe ? ' · Lit bébé' : ''}</span></div>
         </div>
@@ -312,7 +322,7 @@ window.initHostDetail = async function () {
         <div class="info-block__body">
           <div class="detail-row"><span class="detail-label">Agent</span><span class="detail-value">${item.agentName || 'Non assigné'}</span></div>
           <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">${formatDate(item.date_intervention)}</span></div>
-          <div class="detail-row"><span class="detail-label">Horaires</span><span class="detail-value">${item.heure_debut || '—'} – ${item.heure_fin || '—'}</span></div>
+          <div class="detail-row"><span class="detail-label">Horaires</span><span class="detail-value">${formatHeure(item.heure_debut)} – ${formatHeure(item.heure_fin)}</span></div>
           <div class="detail-row"><span class="detail-label">Type</span><span class="detail-value">${typeLabel}</span></div>
           ${item.remarques ? `<div class="detail-row"><span class="detail-label">Remarques</span><span class="detail-value" style="white-space:pre-line;">${item.remarques}</span></div>` : ''}
         </div>
@@ -412,9 +422,9 @@ window.initAgentDetail = async function () {
       <div class="info-block">
         <div class="info-block__title">Intervention du ${formatDate(item.date_intervention)}</div>
         <div class="info-block__body">
-          <div class="detail-row"><span class="detail-label">Horaires</span><span class="detail-value" style="font-weight:600;color:var(--accent);">${item.heure_debut || '—'} – ${item.heure_fin || '—'}</span></div>
+          <div class="detail-row"><span class="detail-label">Horaires</span><span class="detail-value" style="font-weight:600;color:var(--accent);">${formatHeure(item.heure_debut)} – ${formatHeure(item.heure_fin)}</span></div>
           <div class="detail-row"><span class="detail-label">Type</span><span class="detail-value">${typeLabel}</span></div>
-          <div class="detail-row"><span class="detail-label">Départ client</span><span class="detail-value" style="font-weight:600;">${item.heure_depart || '—'}</span></div>
+          <div class="detail-row"><span class="detail-label">Départ client</span><span class="detail-value" style="font-weight:600;">${formatHeure(item.heure_depart)}</span></div>
           ${item.remarques ? `<div class="detail-row"><span class="detail-label">Instructions</span><span class="detail-value" style="white-space:pre-line;">${item.remarques}</span></div>` : ''}
         </div>
       </div>

@@ -35,7 +35,9 @@ function formatDateShort(dateStr) {
 
 function formatDay(dateStr) {
   if (!dateStr) return '—';
-  return new Date(dateStr).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+  const raw = new Date(dateStr).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const capitalized = raw.charAt(0).toUpperCase() + raw.slice(1);
+  return `Nous sommes le ${capitalized}`;
 }
 
 function calcNuits(dateArrivee, dateDepart) {
@@ -80,7 +82,18 @@ function initiales(name) {
   return name.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
 }
 
-/* --- Pluriel simple --------------------------------------- */
+/* --- Formatage heure (garde-fou contre sérialisation Sheets) --- */
+function formatHeure(val) {
+  if (!val) return '—';
+  // Si c'est déjà au format HH:MM, on retourne direct
+  if (/^\d{1,2}:\d{2}$/.test(String(val))) return val;
+  // Si Sheets a sérialisé l'heure en objet Date complet (ex: "Sat Dec 30 1899...")
+  const d = new Date(val);
+  if (!isNaN(d)) {
+    return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+  return String(val).slice(0, 5);
+}
 function pluriel(n, singular, plural) {
   return n === 1 ? `${n} ${singular}` : `${n} ${plural}`;
 }
