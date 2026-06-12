@@ -64,7 +64,7 @@ window.initDashboard = async function () {
     } catch (err) {
         console.error('[Dashboard] Erreur:', err);
         const list = document.getElementById('interventions-list');
-        if (list) list.innerHTML = '<div class="empty-state"><p>Impossible de charger les interventions.</p></div>';
+        if (list) list.innerHTML = `<div class="empty-state"><p style="color:var(--danger);font-size:0.75rem;word-break:break-all;">${err?.message || String(err)}</p></div>`;
         toast('Erreur de chargement', 'error');
       }
 
