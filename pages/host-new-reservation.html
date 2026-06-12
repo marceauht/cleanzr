@@ -19,21 +19,54 @@
   <main class="page-content form-page">
     <form id="reservation-form" novalidate>
 
-      <!-- 1. Source -->
+      <!-- 1. Logement -->
       <div class="glass-card form-section">
-        <p class="form-section__title">Source</p>
+        <p class="form-section__title">Logement</p>
         <div class="form-stack">
 
           <div class="form-group">
-            <label class="form-label" for="input-plateforme">Plateforme</label>
-            <select class="select" id="input-plateforme">
-              <option value="">— Choisir —</option>
-              <option value="Airbnb">Airbnb</option>
-              <option value="Booking">Booking.com</option>
-              <option value="Abritel">Abritel / VRBO</option>
-              <option value="Direct">Réservation directe</option>
-              <option value="Autre">Autre</option>
-            </select>
+            <label class="form-label">Logement *</label>
+            <div class="custom-select" id="select-logement" data-value="" role="combobox" aria-haspopup="listbox" aria-expanded="false" tabindex="0">
+              <div class="custom-select__trigger">
+                <span class="custom-select__label" id="select-logement-label">Chargement…</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              <div class="custom-select__dropdown" id="select-logement-dropdown" role="listbox" hidden></div>
+            </div>
+          </div>
+
+          <div class="form-group" id="code-acces-group" style="display:none;">
+            <label class="form-label">Code d'accès</label>
+            <input class="input" id="input-code-acces" type="text" readonly>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 2. Réservation -->
+      <div class="glass-card form-section">
+        <p class="form-section__title">Réservation</p>
+        <div class="form-stack">
+
+          <div class="form-group">
+            <label class="form-label">Plateforme *</label>
+            <div class="custom-select" id="select-plateforme" data-value="" role="combobox" aria-haspopup="listbox" aria-expanded="false" tabindex="0">
+              <div class="custom-select__trigger">
+                <span class="custom-select__label" id="select-plateforme-label">— Choisir —</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              <div class="custom-select__dropdown" id="select-plateforme-dropdown" role="listbox" hidden>
+                <div class="custom-select__option" data-value="Airbnb" role="option">Airbnb</div>
+                <div class="custom-select__option" data-value="Booking" role="option">Booking.com</div>
+                <div class="custom-select__option" data-value="Direct" role="option">Réservation directe</div>
+                <div class="custom-select__option" data-value="Autre" role="option">Autre</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group" id="plateforme-autre-group" style="display:none;">
+            <label class="form-label" for="input-plateforme-autre">Précisez *</label>
+            <input class="input" id="input-plateforme-autre" type="text" placeholder="Nom de la plateforme" autocomplete="off">
           </div>
 
           <div class="form-group">
@@ -41,19 +74,10 @@
             <input class="input" id="input-ref" type="text" placeholder="Ex : HM12345678" autocomplete="off">
           </div>
 
-          <div class="form-group">
-            <label class="form-label" for="input-statut-resa">Statut réservation</label>
-            <select class="select" id="input-statut-resa">
-              <option value="confirmee">Confirmée</option>
-              <option value="en_attente">En attente</option>
-              <option value="annulee">Annulée</option>
-            </select>
-          </div>
-
         </div>
       </div>
 
-      <!-- 2. Voyageur -->
+      <!-- 3. Voyageur -->
       <div class="glass-card form-section">
         <p class="form-section__title">Voyageur</p>
         <div class="form-stack">
@@ -63,18 +87,35 @@
             <input class="input" id="input-client-nom" type="text" placeholder="Prénom Nom" required autocomplete="off">
           </div>
 
-          <div class="form-group">
-            <label class="form-label" for="input-client-tel">Téléphone</label>
-            <input class="input" id="input-client-tel" type="tel" placeholder="+33 6 …" autocomplete="off">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+            <div class="form-group">
+              <label class="form-label">Adultes</label>
+              <div class="stepper" role="group" aria-label="Nombre d'adultes">
+                <button type="button" class="stepper__btn" id="step-adultes-minus" aria-label="Diminuer" disabled>−</button>
+                <div class="stepper__value" id="step-adultes-value" aria-live="polite">1</div>
+                <button type="button" class="stepper__btn" id="step-adultes-plus" aria-label="Augmenter">+</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Enfants</label>
+              <div class="stepper" role="group" aria-label="Nombre d'enfants">
+                <button type="button" class="stepper__btn" id="step-enfants-minus" aria-label="Diminuer" disabled>−</button>
+                <div class="stepper__value" id="step-enfants-value" aria-live="polite">0</div>
+                <button type="button" class="stepper__btn" id="step-enfants-plus" aria-label="Augmenter">+</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Bébés</label>
+              <div class="stepper" role="group" aria-label="Nombre de bébés">
+                <button type="button" class="stepper__btn" id="step-bebes-minus" aria-label="Diminuer" disabled>−</button>
+                <div class="stepper__value" id="step-bebes-value" aria-live="polite">0</div>
+                <button type="button" class="stepper__btn" id="step-bebes-plus" aria-label="Augmenter">+</button>
+              </div>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Nombre de voyageurs</label>
-            <div class="stepper" role="group" aria-label="Nombre de voyageurs">
-              <button type="button" class="stepper__btn" id="step-minus" aria-label="Diminuer" disabled>−</button>
-              <div class="stepper__value" id="step-value" aria-live="polite">1</div>
-              <button type="button" class="stepper__btn" id="step-plus" aria-label="Augmenter">+</button>
-            </div>
+          <div style="font-size:0.8125rem;color:var(--text-secondary);padding:4px 0 2px;">
+            Total : <strong id="voyageurs-total" style="color:var(--text-primary);">1 voyageur</strong>
           </div>
 
           <div class="form-group">
@@ -84,6 +125,14 @@
                 <span>Animaux de compagnie</span>
                 <input type="checkbox" id="toggle-animaux" class="toggle-input">
               </label>
+              <div id="nb-animaux-group" class="slide-down" style="display:none;">
+                <label class="form-label" style="margin-bottom:6px;display:block;">Nombre d'animaux</label>
+                <div class="stepper" role="group" aria-label="Nombre d'animaux">
+                  <button type="button" class="stepper__btn" id="step-animaux-minus" aria-label="Diminuer" disabled>−</button>
+                  <div class="stepper__value" id="step-animaux-value" aria-live="polite">1</div>
+                  <button type="button" class="stepper__btn" id="step-animaux-plus" aria-label="Augmenter">+</button>
+                </div>
+              </div>
               <label class="toggle-label">
                 <span>Lit bébé nécessaire</span>
                 <input type="checkbox" id="toggle-lit-bebe" class="toggle-input">
@@ -94,30 +143,30 @@
         </div>
       </div>
 
-      <!-- 3. Séjour -->
+      <!-- 4. Dates -->
       <div class="glass-card form-section">
-        <p class="form-section__title">Séjour</p>
+        <p class="form-section__title">Dates</p>
         <div class="form-stack">
 
           <div class="date-range">
             <div class="form-group">
               <label class="form-label" for="input-arrivee">Arrivée *</label>
-              <input class="input" id="input-arrivee" type="date" required>
+              <input class="input" id="input-arrivee" type="text" placeholder="jj/mm/aaaa" required>
             </div>
             <div class="form-group">
               <label class="form-label" for="input-heure-arrivee">Heure</label>
-              <input class="input" id="input-heure-arrivee" type="time" value="16:00">
+              <input class="input" id="input-heure-arrivee" type="text" placeholder="16:00">
             </div>
           </div>
 
           <div class="date-range">
             <div class="form-group">
               <label class="form-label" for="input-depart">Départ *</label>
-              <input class="input" id="input-depart" type="date" required>
+              <input class="input" id="input-depart" type="text" placeholder="jj/mm/aaaa" required>
             </div>
             <div class="form-group">
               <label class="form-label" for="input-heure-depart">Heure</label>
-              <input class="input" id="input-heure-depart" type="time" value="11:00">
+              <input class="input" id="input-heure-depart" type="text" placeholder="11:00">
             </div>
           </div>
 
@@ -129,47 +178,47 @@
         </div>
       </div>
 
-      <!-- 4. Intervention -->
+      <!-- 5. Intervention -->
       <div class="glass-card form-section">
         <p class="form-section__title">Intervention</p>
         <div class="form-stack">
 
           <div class="form-group">
-            <label class="form-label" for="input-agent">Agent assigné *</label>
-            <select class="select" id="input-agent" required>
-              <option value="">Chargement…</option>
-            </select>
+            <label class="form-label">Agent assigné *</label>
+            <div class="custom-select" id="select-agent" data-value="" role="combobox" aria-haspopup="listbox" aria-expanded="false" tabindex="0">
+              <div class="custom-select__trigger">
+                <span class="custom-select__label" id="select-agent-label">Chargement…</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              <div class="custom-select__dropdown" id="select-agent-dropdown" role="listbox" hidden></div>
+            </div>
           </div>
 
           <div class="form-group">
             <label class="form-label" for="input-date-intervention">Date d'intervention *</label>
-            <input class="input" id="input-date-intervention" type="date" required>
+            <input class="input" id="input-date-intervention" type="text" placeholder="Automatique à la date de départ">
           </div>
 
           <div class="date-range">
             <div class="form-group">
               <label class="form-label" for="input-heure-debut">Début</label>
-              <input class="input" id="input-heure-debut" type="time" value="11:00">
+              <input class="input" id="input-heure-debut" type="text" placeholder="11:00">
             </div>
             <div class="form-group">
               <label class="form-label" for="input-heure-fin">Fin</label>
-              <input class="input" id="input-heure-fin" type="time" value="15:00">
+              <input class="input" id="input-heure-fin" type="text" placeholder="15:00">
             </div>
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="input-type">Type d'intervention</label>
-            <select class="select" id="input-type">
-              <option value="standard">Standard</option>
-              <option value="grand_menage">Grand ménage</option>
-              <option value="controle">Contrôle</option>
-            </select>
+            <label class="form-label" for="input-remarques">Remarques pour l'agent</label>
+            <textarea class="textarea" id="input-remarques" placeholder="Codes d'accès, points d'attention, consignes particulières…" rows="3"></textarea>
           </div>
 
         </div>
       </div>
 
-      <!-- 5. Linge -->
+      <!-- 6. Linge -->
       <div class="glass-card form-section">
         <p class="form-section__title">Linge à prévoir</p>
         <div class="form-stack">
@@ -179,43 +228,110 @@
               <input class="input" id="linge-draps" type="number" min="0" value="0">
             </div>
             <div class="form-group">
-              <label class="form-label" for="linge-housses">Housses</label>
+              <label class="form-label" for="linge-housses">Housses de couette</label>
               <input class="input" id="linge-housses" type="number" min="0" value="0">
             </div>
             <div class="form-group">
-              <label class="form-label" for="linge-taies">Taies</label>
+              <label class="form-label" for="linge-taies">Taies d'oreiller</label>
               <input class="input" id="linge-taies" type="number" min="0" value="0">
             </div>
             <div class="form-group">
-              <label class="form-label" for="linge-serv-bain">Serv. bain</label>
+              <label class="form-label" for="linge-serv-bain">Serviettes de bain</label>
               <input class="input" id="linge-serv-bain" type="number" min="0" value="0">
             </div>
             <div class="form-group">
-              <label class="form-label" for="linge-serv-mains">Serv. mains</label>
+              <label class="form-label" for="linge-serv-mains">Serviettes de mains</label>
               <input class="input" id="linge-serv-mains" type="number" min="0" value="0">
             </div>
             <div class="form-group">
-              <label class="form-label" for="linge-tapis">Tapis bain</label>
+              <label class="form-label" for="linge-tapis">Tapis de bain</label>
               <input class="input" id="linge-tapis" type="number" min="0" value="0">
             </div>
-            <div class="form-group">
+            <div class="form-group" style="grid-column:1 / -1; display:flex; flex-direction:column; align-items:center;">
               <label class="form-label" for="linge-torchons">Torchons</label>
-              <input class="input" id="linge-torchons" type="number" min="0" value="0">
+              <input class="input" id="linge-torchons" type="number" min="0" value="0" style="max-width:120px;">
             </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="linge-autres">Autres</label>
-            <input class="input" id="linge-autres" type="text" placeholder="Ex : peignoirs, serviettes piscine…" autocomplete="off">
           </div>
         </div>
       </div>
 
-      <!-- 6. Remarques -->
+      <!-- 7. Consommables -->
       <div class="glass-card form-section">
-        <p class="form-section__title">Remarques pour l'agent</p>
+        <p class="form-section__title">Consommables à prévoir</p>
         <div class="form-stack">
-          <div class="form-group">
-            <textarea class="textarea" id="input-remarques" placeholder="Codes d'accès, points d'attention, consignes particulières…" rows="4"></textarea>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
+            <div class="form-group">
+              <label class="form-label" for="conso-gel-douche">Gel douche</label>
+              <input class="input" id="conso-gel-douche" type="number" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="conso-shampoing">Shampoing</label>
+              <input class="input" id="conso-shampoing" type="number" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="conso-apres-shampoing">Après-shampoing</label>
+              <input class="input" id="conso-apres-shampoing" type="number" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="conso-savon">Savon</label>
+              <input class="input" id="conso-savon" type="number" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="conso-kit-hygiene">Kit d'hygiène</label>
+              <input class="input" id="conso-kit-hygiene" type="number" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="conso-brosse-dents">Brosse à dents</label>
+              <input class="input" id="conso-brosse-dents" type="number" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="conso-boules-quies">Boules quies</label>
+              <input class="input" id="conso-boules-quies" type="number" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="conso-cafe">Café</label>
+              <input class="input" id="conso-cafe" type="number" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="conso-the">Thé</label>
+              <input class="input" id="conso-the" type="number" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="conso-sucre">Sucre</label>
+              <input class="input" id="conso-sucre" type="number" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="conso-sel-poivre">Sel &amp; poivre</label>
+              <input class="input" id="conso-sel-poivre" type="number" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="conso-huile-olive">Huile d'olive</label>
+              <input class="input" id="conso-huile-olive" type="number" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="conso-liquide-vaisselle">Liquide vaisselle</label>
+              <input class="input" id="conso-liquide-vaisselle" type="number" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="conso-eponge">Éponge</label>
+              <input class="input" id="conso-eponge" type="number" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="conso-sacs-poubelle">Sacs poubelle</label>
+              <input class="input" id="conso-sacs-poubelle" type="number" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="conso-essuie-tout">Papier essuie-tout</label>
+              <input class="input" id="conso-essuie-tout" type="number" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="conso-eau">Bouteille d'eau</label>
+              <input class="input" id="conso-eau" type="number" min="0" value="0">
+            </div>
+            <div class="form-group" style="grid-column:1 / -1;">
+              <label class="form-label" for="conso-autre">Autre</label>
+              <input class="input" id="conso-autre" type="text" placeholder="Précisez…" autocomplete="off">
+            </div>
           </div>
         </div>
       </div>

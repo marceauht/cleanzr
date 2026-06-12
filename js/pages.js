@@ -11,7 +11,7 @@ window.initDashboard = async function () {
   const name = session.get('name') || (role === 'host' ? 'Hôte' : 'Agent');
 
   setText('#greeting-text', `Bonjour ${name.split(' ')[0]} 👋`);
-  setText('#greeting-date', formatDay(new Date().toISOString()));
+  setText('#greeting-date', formatDay(new Date()));
 
   const btnTheme = document.getElementById('btn-theme');
   if (btnTheme) {
@@ -35,7 +35,7 @@ window.initDashboard = async function () {
   }
 
   let allInterventions = [];
-  let activeFilter = role === 'host' ? 'all' : 'avenir';
+  let activeFilter = 'avenir';
 
   document.querySelectorAll('.filter-tab').forEach(tab => {
     tab.classList.toggle('active', tab.dataset.filter === activeFilter);
@@ -61,11 +61,12 @@ window.initDashboard = async function () {
     updateStats(allInterventions);
     renderList(filterBy(allInterventions, activeFilter));
     requestNotificationPermission(session.get('userId')).catch(() => null);
-  } catch {
-      const list = document.getElementById('interventions-list');
-      if (list) list.innerHTML = '<div class="empty-state"><p>Impossible de charger les interventions.</p></div>';
-      toast('Erreur de chargement', 'error');
-    }
+    } catch (err) {
+        console.error('[Dashboard] Erreur:', err);
+        const list = document.getElementById('interventions-list');
+        if (list) list.innerHTML = '<div class="empty-state"><p>Impossible de charger les interventions.</p></div>';
+        toast('Erreur de chargement', 'error');
+      }
 
   function updateStats(list) {
     if (role === 'host') {
@@ -90,6 +91,7 @@ window.initDashboard = async function () {
 
   function renderList(list) {
     const container = document.getElementById('interventions-list');
+    if (!container) return;
     if (!list.length) {
       const emptyIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" opacity="0.35" viewBox="0 0 256 256"><path d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM72,48v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48V48ZM208,208H48V96H208V208Zm-38.34-85.66a8,8,0,0,1,0,11.32l-48,48a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L116,164.69l42.34-42.35A8,8,0,0,1,169.66,122.34Z"/></svg>`;
       container.innerHTML = `
@@ -108,34 +110,46 @@ window.initDashboard = async function () {
       const hFin    = formatHeure(item.heure_fin);
       const hDepart = formatHeure(item.heure_depart);
       const typeLabel = { standard: 'Standard', grand_menage: 'Grand ménage', controle: 'Contrôle' }[item.type] || item.type;
+      const plateformeRef = [item.plateforme, item.ref_reservation ? `#${item.ref_reservation}` : ''].filter(Boolean).join(' · ');
       return `
         <article class="glass-card intervention-card animate-fade-in-up stagger-${Math.min(i, 4) + 1}${today ? ' today-card' : ''}" data-id="${item.id}" role="listitem" tabindex="0">
           <div class="intervention-card__top">
             <div class="intervention-card__info">
+              ${role === 'host' ? `
+              <div style="display:flex;flex-direction:column;gap:2px;">
+                ${plateformeRef ? `<div class="intervention-card__platform">${plateformeRef}</div>` : ''}
+                <div class="intervention-card__logement">${item.client_nom || '—'}</div>
+                ${item.logement_nom ? `<div class="intervention-card__meta"><span>${item.logement_nom}</span></div>` : ''}
+                <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.8rem;color:var(--text-secondary);margin-top:1px;">${formatDateShort(item.date_arrivee)} → ${formatDateShort(item.date_depart)} · ${item.nb_voyageurs || 1} voyageur${(item.nb_voyageurs || 1) > 1 ? 's' : ''}</div>
+              </div>
+              ` : `
               ${today ? '<div class="today-label">Aujourd\'hui</div>' : ''}
               <div class="intervention-card__logement">${item.client_nom || '—'}</div>
               <div class="intervention-card__meta">
-                ${role === 'host' ? `<span>${typeLabel}</span>` : ''}
-                ${item.heure_debut ? `<span>·</span><span>${hDebut}–${hFin}</span>` : ''}
-                ${role === 'agent' && item.date_depart ? `<span>·</span><span>séjour jusqu'au ${formatDateShort(item.date_depart)}</span>` : ''}
+                ${item.heure_debut ? `<span>${hDebut}–${hFin}</span>` : ''}
+                ${item.date_depart ? `<span>·</span><span>séjour jusqu'au ${formatDateShort(item.date_depart)}</span>` : ''}
               </div>
+              `}
             </div>
             <div class="date-badge">
               <span class="date-badge__day">${day}</span>
               <span>${month}</span>
             </div>
           </div>
-          <div class="intervention-card__bottom">
+          <div class="intervention-card__bottom" style="flex-direction:column;align-items:flex-start;gap:6px;">
             ${role === 'host'
-              ? `<div class="intervention-card__agent">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-                  <span style="color:var(--accent);font-weight:500;">${item.agentName || 'Non assigné'}</span>
+              ? `<div style="width:100%;display:flex;justify-content:space-between;align-items:flex-end;margin-top:auto;">
+                  <div style="display:inline-flex;align-items:center;gap:4px;font-size:0.8125rem;color:var(--accent);font-weight:500;">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                    ${item.agentName || 'Non assigné'}
+                  </div>
+                  ${statutBadge(item.statut)}
                 </div>`
               : `<div class="intervention-card__agent">
                   ${hDepart !== '—' ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Départ client : <strong>${hDepart}</strong></span>` : '<span style="opacity:0.4;">Heure de départ non renseignée</span>'}
-                </div>`
+                </div>
+                ${statutBadge(item.statut)}`
             }
-            ${statutBadge(item.statut)}
           </div>
         </article>`;
     }).join('');
@@ -152,35 +166,183 @@ window.initDashboard = async function () {
 };
 
 /* ---------------------------------------------------------- */
+/*  Utilitaire : custom select                                */
+/* ---------------------------------------------------------- */
+function initCustomSelect(selectId, onChange) {
+  const root     = document.getElementById(selectId);
+  const trigger  = root?.querySelector('.custom-select__trigger');
+  const labelEl  = root?.querySelector('.custom-select__label');
+  const dropdown = root?.querySelector('.custom-select__dropdown');
+  if (!root || !trigger || !dropdown) return;
+
+  const CSS = `
+    .custom-select{position:relative;isolation:isolate;}
+    .custom-select__trigger{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;border-radius:var(--radius-sm);background:var(--glass-bg);border:1px solid var(--glass-border);cursor:pointer;user-select:none;transition:border-color var(--transition);}
+    .custom-select__trigger:hover,.custom-select[aria-expanded="true"] .custom-select__trigger{border-color:var(--accent);}
+    .custom-select__label{font-size:0.9375rem;color:var(--text-primary);flex:1;}
+    .custom-select__label.placeholder{color:var(--text-secondary);}
+    .custom-select__dropdown{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:9999;border-radius:var(--radius-sm);overflow:hidden;box-shadow:var(--shadow-lg);}
+    .custom-select__option{padding:12px 14px;font-size:0.9375rem;cursor:pointer;background:var(--glass-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border);transition:background var(--transition),color var(--transition);}
+    .custom-select__option:last-child{border-bottom:none;}
+    .custom-select__option:hover,.custom-select__option.active{background:var(--accent-bg);color:var(--accent);}
+    .slide-down{animation:slideDown 0.25s ease;}
+    @keyframes slideDown{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+  `;
+  if (!document.getElementById('custom-select-style')) {
+    const s = document.createElement('style'); s.id = 'custom-select-style'; s.textContent = CSS;
+    document.head.appendChild(s);
+  }
+
+  labelEl.classList.add('placeholder');
+
+  function openDropdown() {
+    dropdown.hidden = false;
+    root.setAttribute('aria-expanded', 'true');
+  }
+  function closeDropdown() {
+    dropdown.hidden = true;
+    root.setAttribute('aria-expanded', 'false');
+  }
+
+  trigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdown.hidden ? openDropdown() : closeDropdown();
+  });
+
+  dropdown.addEventListener('click', (e) => {
+    const opt = e.target.closest('.custom-select__option');
+    if (!opt) return;
+    const val   = opt.dataset.value;
+    const label = opt.textContent.trim();
+    root.dataset.value = val;
+    labelEl.textContent = label;
+    labelEl.classList.remove('placeholder');
+    dropdown.querySelectorAll('.custom-select__option').forEach(o => o.classList.toggle('active', o === opt));
+    closeDropdown();
+    if (onChange) onChange(val, label);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!root.contains(e.target)) closeDropdown();
+  });
+
+  root.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeDropdown();
+  });
+}
+
+function getCustomSelectValue(selectId) {
+  return document.getElementById(selectId)?.dataset.value || '';
+}
+
+function populateCustomSelect(selectId, options, placeholder) {
+  const dropdown = document.querySelector(`#${selectId} .custom-select__dropdown`);
+  const labelEl  = document.querySelector(`#${selectId} .custom-select__label`);
+  if (!dropdown) return;
+  dropdown.innerHTML = options.map(o =>
+    `<div class="custom-select__option" data-value="${o.value}" role="option">${o.label}</div>`
+  ).join('');
+  if (labelEl && placeholder) { labelEl.textContent = placeholder; labelEl.classList.add('placeholder'); }
+}
+
+/* ---------------------------------------------------------- */
 /*  Nouvelle réservation Hôte                                 */
 /* ---------------------------------------------------------- */
 window.initHostNewReservation = async function () {
   document.getElementById('btn-back')?.addEventListener('click', () => history.back());
 
-  // Stepper nb_voyageurs
-  let nbVoyageurs = 1;
-  const stepValue = document.getElementById('step-value');
-  const stepMinus = document.getElementById('step-minus');
-  const stepPlus  = document.getElementById('step-plus');
+  // --- Custom selects ---
+  initCustomSelect('select-plateforme', (val) => {
+    document.getElementById('plateforme-autre-group').style.display = val === 'Autre' ? '' : 'none';
+    if (val !== 'Autre') document.getElementById('input-plateforme-autre').value = '';
+  });
 
-  function updateStepper() {
-    stepValue.textContent = nbVoyageurs;
-    stepMinus.disabled = nbVoyageurs <= 1;
-    stepPlus.disabled  = nbVoyageurs >= 20;
+  initCustomSelect('select-logement', (val) => {
+    const logement = (window._logements || []).find(l => l.id === val);
+    const codeGroup = document.getElementById('code-acces-group');
+    const codeInput = document.getElementById('input-code-acces');
+    if (logement?.code_acces) {
+      codeInput.value = logement.code_acces;
+      codeGroup.style.display = '';
+    } else {
+      codeInput.value = '';
+      codeGroup.style.display = 'none';
+    }
+  });
+
+  initCustomSelect('select-agent');
+
+  // --- Chargement logements ---
+  try {
+    const resLog = await getLogements();
+    window._logements = resLog?.logements || [];
+    populateCustomSelect('select-logement',
+      window._logements.map(l => ({ value: l.id, label: l.nom })),
+      window._logements.length ? '— Choisir —' : 'Aucun logement'
+    );
+  } catch {
+    populateCustomSelect('select-logement', [], 'Erreur de chargement');
   }
-  stepMinus.addEventListener('click', () => { if (nbVoyageurs > 1)  { nbVoyageurs--; updateStepper(); } });
-  stepPlus.addEventListener( 'click', () => { if (nbVoyageurs < 20) { nbVoyageurs++; updateStepper(); } });
 
-  // Calcul nuits
+  // --- Chargement agents ---
+  try {
+    const resAg = await getAgents();
+    const agents = resAg?.agents || [];
+    populateCustomSelect('select-agent',
+      agents.map(a => ({ value: a.userId, label: a.nom })),
+      agents.length ? '— Choisir un agent —' : 'Aucun agent'
+    );
+  } catch {
+    populateCustomSelect('select-agent', [], 'Erreur de chargement');
+  }
+
+  // --- Steppers adultes / enfants / bébés / animaux ---
+  const steppers = [
+    { id: 'adultes', min: 1, max: 20 },
+    { id: 'enfants', min: 0, max: 20 },
+    { id: 'bebes',   min: 0, max: 20 },
+    { id: 'animaux', min: 1, max: 20 },
+  ];
+  const counts = { adultes: 1, enfants: 0, bebes: 0, animaux: 1 };
+
+  function updateTotal() {
+    const total = counts.adultes + counts.enfants + counts.bebes;
+    document.getElementById('voyageurs-total').textContent =
+      total + (total > 1 ? ' voyageurs' : ' voyageur');
+  }
+
+  steppers.forEach(({ id, min, max }) => {
+    const minusBtn = document.getElementById(`step-${id}-minus`);
+    const plusBtn  = document.getElementById(`step-${id}-plus`);
+    const valueEl  = document.getElementById(`step-${id}-value`);
+
+    function sync() {
+      valueEl.textContent  = counts[id];
+      minusBtn.disabled    = counts[id] <= min;
+      plusBtn.disabled     = counts[id] >= max;
+      updateTotal();
+    }
+    minusBtn.addEventListener('click', () => { if (counts[id] > min) { counts[id]--; sync(); } });
+    plusBtn.addEventListener( 'click', () => { if (counts[id] < max) { counts[id]++; sync(); } });
+    sync();
+  });
+
+  // --- Toggle animaux ---
+  document.getElementById('toggle-animaux').addEventListener('change', (e) => {
+    const grp = document.getElementById('nb-animaux-group');
+    grp.style.display = e.target.checked ? '' : 'none';
+    if (!e.target.checked) {
+      counts.animaux = 1;
+      document.getElementById('step-animaux-value').textContent = '1';
+      document.getElementById('step-animaux-minus').disabled = true;
+    }
+  });
+
+  // --- Calcul nuits ---
   const inputArrivee = document.getElementById('input-arrivee');
   const inputDepart  = document.getElementById('input-depart');
-  const inputDateInt = document.getElementById('input-date-intervention');
   const dateSummary  = document.getElementById('date-summary');
   const dateNuits    = document.getElementById('date-nuits');
-
-  const today = new Date().toISOString().split('T')[0];
-  inputArrivee.min = today;
-  inputDepart.min  = today;
 
   function updateNuits() {
     const a = inputArrivee.value;
@@ -192,67 +354,89 @@ window.initHostNewReservation = async function () {
 
   inputArrivee.addEventListener('change', () => {
     if (inputDepart.value && inputDepart.value <= inputArrivee.value) inputDepart.value = '';
-    inputDepart.min = inputArrivee.value || today;
     updateNuits();
   });
-
+  inputDepart.addEventListener('change', updateNuits);
   inputDepart.addEventListener('change', () => {
-    updateNuits();
-    if (!inputDateInt.value) inputDateInt.value = inputDepart.value;
+    const fpInst = document.getElementById('input-date-intervention')?._flatpickr;
+    if (fpInst && inputDepart.value) fpInst.setDate(inputDepart.value);
   });
 
-  // Chargement agents
-  try {
-    const res    = await getAgents();
-    const agents = res?.agents || [];
-    const select = document.getElementById('input-agent');
-    select.innerHTML = '<option value="">— Choisir un agent —</option>' +
-      agents.map(a => `<option value="${a.userId}">${a.nom}</option>`).join('');
-  } catch {
-    document.getElementById('input-agent').innerHTML = '<option value="">Erreur de chargement</option>';
-  }
+  // --- Flatpickr ---
+  const fpOptions = { locale: 'fr', disableMobile: true };
+  flatpickr('#input-arrivee',           { ...fpOptions, dateFormat: 'Y-m-d', minDate: 'today', onChange: ([d]) => { inputArrivee.value = d ? d.toISOString().split('T')[0] : ''; inputArrivee.dispatchEvent(new Event('change')); }});
+  flatpickr('#input-depart',            { ...fpOptions, dateFormat: 'Y-m-d', minDate: 'today', onChange: ([d]) => { inputDepart.value  = d ? d.toISOString().split('T')[0] : ''; inputDepart.dispatchEvent(new Event('change')); }});
+  flatpickr('#input-date-intervention', { ...fpOptions, dateFormat: 'Y-m-d', minDate: 'today' });
+  flatpickr('#input-heure-arrivee',     { ...fpOptions, enableTime: true, noCalendar: true, dateFormat: 'H:i', time_24hr: true });
+  flatpickr('#input-heure-depart',      { ...fpOptions, enableTime: true, noCalendar: true, dateFormat: 'H:i', time_24hr: true });
+  flatpickr('#input-heure-debut',       { ...fpOptions, enableTime: true, noCalendar: true, dateFormat: 'H:i', time_24hr: true });
+  flatpickr('#input-heure-fin',         { ...fpOptions, enableTime: true, noCalendar: true, dateFormat: 'H:i', time_24hr: true });
 
-  // Soumission
+  // --- Soumission ---
   document.getElementById('reservation-form').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const client_nom           = document.getElementById('input-client-nom').value.trim();
-    const client_tel           = document.getElementById('input-client-tel').value.trim();
-    const date_arrivee         = inputArrivee.value;
-    const heure_arrivee        = document.getElementById('input-heure-arrivee').value;
-    const date_depart          = inputDepart.value;
-    const heure_depart         = document.getElementById('input-heure-depart').value;
-    const agent_id             = document.getElementById('input-agent').value;
-    const date_intervention    = inputDateInt.value;
-    const heure_debut          = document.getElementById('input-heure-debut').value;
-    const heure_fin            = document.getElementById('input-heure-fin').value;
-    const type_intervention    = document.getElementById('input-type').value;
-    const logement_id          = 'LOGEMENT_1';
-    const plateforme           = document.getElementById('input-plateforme').value;
-    const ref_reservation      = document.getElementById('input-ref').value.trim();
-    const statut_reservation   = document.getElementById('input-statut-resa').value;
-    const animaux              = document.getElementById('toggle-animaux').checked;
-    const lit_bebe             = document.getElementById('toggle-lit-bebe').checked;
-    const remarques            = document.getElementById('input-remarques').value.trim();
+    const logement_id   = getCustomSelectValue('select-logement');
+    const plateforme_raw = getCustomSelectValue('select-plateforme');
+    const plateforme_autre = document.getElementById('input-plateforme-autre').value.trim();
+    const plateforme    = plateforme_raw === 'Autre' ? plateforme_autre : plateforme_raw;
+    const ref_reservation = document.getElementById('input-ref').value.trim();
+    const client_nom    = document.getElementById('input-client-nom').value.trim();
+    const date_arrivee  = inputArrivee.value;
+    const heure_arrivee = document.getElementById('input-heure-arrivee').value;
+    const date_depart   = inputDepart.value;
+    const heure_depart  = document.getElementById('input-heure-depart').value;
+    const agent_id      = getCustomSelectValue('select-agent');
+    const date_intervention = document.getElementById('input-date-intervention').value || date_depart;
+    const heure_debut   = document.getElementById('input-heure-debut').value;
+    const heure_fin     = document.getElementById('input-heure-fin').value;
+    const remarques     = document.getElementById('input-remarques').value.trim();
+    const lit_bebe      = document.getElementById('toggle-lit-bebe').checked;
+    const animauxChecked = document.getElementById('toggle-animaux').checked;
+    const nb_animaux    = animauxChecked ? counts.animaux : 0;
+    const nb_adultes    = counts.adultes;
+    const nb_enfants    = counts.enfants;
+    const nb_bebes      = counts.bebes;
 
-    if (!client_nom || !date_arrivee || !date_depart || !agent_id || !date_intervention) {
-      toast('Veuillez remplir tous les champs obligatoires.', 'error');
-      return;
-    }
-    if (new Date(date_depart) <= new Date(date_arrivee)) {
-      toast('La date de départ doit être après l\'arrivée.', 'error');
-      return;
-    }
+    if (!logement_id) { toast('Veuillez sélectionner un logement.', 'error'); return; }
+    if (!plateforme_raw) { toast('Veuillez sélectionner une plateforme.', 'error'); return; }
+    if (plateforme_raw === 'Autre' && !plateforme_autre) { toast('Veuillez préciser la plateforme.', 'error'); return; }
+    if (!client_nom) { toast('Veuillez saisir le nom du voyageur.', 'error'); return; }
+    if (!date_arrivee || !date_depart) { toast('Veuillez renseigner les dates de séjour.', 'error'); return; }
+    if (new Date(date_depart) <= new Date(date_arrivee)) { toast('La date de départ doit être après l\'arrivée.', 'error'); return; }
+    if (!agent_id) { toast('Veuillez sélectionner un agent.', 'error'); return; }
+    if (animauxChecked && nb_animaux < 1) { toast('Veuillez indiquer le nombre d\'animaux.', 'error'); return; }
 
     const linge = {
-      draps:      parseInt(document.getElementById('linge-draps').value)     || 0,
-      housses:    parseInt(document.getElementById('linge-housses').value)   || 0,
-      taies:      parseInt(document.getElementById('linge-taies').value)     || 0,
-      serv_bain:  parseInt(document.getElementById('linge-serv-bain').value) || 0,
-      serv_mains: parseInt(document.getElementById('linge-serv-mains').value)|| 0,
-      tapis:      parseInt(document.getElementById('linge-tapis').value)     || 0,
-      torchons:   parseInt(document.getElementById('linge-torchons').value)  || 0,
-      autres:     document.getElementById('linge-autres').value.trim(),
+      draps:      parseInt(document.getElementById('linge-draps').value)      || 0,
+      housses:    parseInt(document.getElementById('linge-housses').value)    || 0,
+      taies:      parseInt(document.getElementById('linge-taies').value)      || 0,
+      serv_bain:  parseInt(document.getElementById('linge-serv-bain').value)  || 0,
+      serv_mains: parseInt(document.getElementById('linge-serv-mains').value) || 0,
+      tapis:      parseInt(document.getElementById('linge-tapis').value)      || 0,
+      torchons:   parseInt(document.getElementById('linge-torchons').value)   || 0,
+    };
+
+    const gi = id => parseInt(document.getElementById(id)?.value) || 0;
+    const consommables = {
+      gel_douche:        gi('conso-gel-douche'),
+      shampoing:         gi('conso-shampoing'),
+      apres_shampoing:   gi('conso-apres-shampoing'),
+      savon:             gi('conso-savon'),
+      kit_hygiene:       gi('conso-kit-hygiene'),
+      brosse_dents:      gi('conso-brosse-dents'),
+      boules_quies:      gi('conso-boules-quies'),
+      cafe:              gi('conso-cafe'),
+      the:               gi('conso-the'),
+      sucre:             gi('conso-sucre'),
+      sel_poivre:        gi('conso-sel-poivre'),
+      huile_olive:       gi('conso-huile-olive'),
+      liquide_vaisselle: gi('conso-liquide-vaisselle'),
+      eponge:            gi('conso-eponge'),
+      sacs_poubelle:     gi('conso-sacs-poubelle'),
+      essuie_tout:       gi('conso-essuie-tout'),
+      eau:               gi('conso-eau'),
+      autre:             document.getElementById('conso-autre')?.value.trim() || '',
     };
 
     const btn = document.getElementById('btn-submit');
@@ -261,11 +445,11 @@ window.initHostNewReservation = async function () {
 
     try {
       const res = await creerReservation({
-        logement_id, plateforme, ref_reservation, statut_reservation,
-        client_nom, client_tel, nb_voyageurs: nbVoyageurs, animaux, lit_bebe,
+        logement_id, plateforme, ref_reservation,
+        client_nom, nb_adultes, nb_enfants, nb_bebes, nb_animaux, lit_bebe,
         date_arrivee, heure_arrivee, date_depart, heure_depart,
         agent_id, date_intervention, heure_debut, heure_fin,
-        type_intervention, linge, remarques,
+        linge, consommables, remarques,
       });
       if (res?.success) {
         toast('Réservation créée avec succès !', 'success');
@@ -301,19 +485,54 @@ window.initHostDetail = async function () {
 
     const nuits    = calcNuits(item.date_arrivee, item.date_depart);
     const estClose = item.statut === 'terminee' || item.statut === 'annulee';
-    const typeLabel = { standard: 'Standard', grand_menage: 'Grand ménage', controle: 'Contrôle' }[item.type] || item.type;
+
+    const nb_adultes = item.nb_adultes || 0;
+    const nb_enfants = item.nb_enfants || 0;
+    const nb_bebes   = item.nb_bebes   || 0;
+    const nb_animaux = item.nb_animaux || 0;
+    const voyageursParts = [];
+    if (nb_adultes > 0) voyageursParts.push(pluriel(nb_adultes, 'adulte', 'adultes'));
+    if (nb_enfants > 0) voyageursParts.push(pluriel(nb_enfants, 'enfant', 'enfants'));
+    if (nb_bebes   > 0) voyageursParts.push(pluriel(nb_bebes,   'bébé',   'bébés'));
+    const voyageursStr = voyageursParts.join(', ') || '—';
+    const animauxStr   = nb_animaux > 0 ? ` · ${pluriel(nb_animaux, 'animal', 'animaux')}` : '';
+    const litBebeStr   = item.lit_bebe ? ' · Lit bébé' : '';
+
+    const consoLabels = {
+      gel_douche:        'Gel douche',
+      shampoing:         'Shampoing',
+      apres_shampoing:   'Après-shampoing',
+      savon:             'Savon',
+      kit_hygiene:       "Kit d'hygiène",
+      brosse_dents:      'Brosse à dents jetable',
+      boules_quies:      'Boules quies',
+      cafe:              'Café',
+      the:               'Thé',
+      sucre:             'Sucre',
+      sel_poivre:        'Sel & poivre',
+      huile_olive:       "Huile d'olive",
+      liquide_vaisselle: 'Liquide vaisselle',
+      eponge:            'Éponge',
+      sacs_poubelle:     'Sacs poubelle',
+      essuie_tout:       'Papier essuie-tout',
+      eau:               "Bouteille d'eau",
+    };
+    const consoItems = Object.entries(consoLabels)
+      .filter(([k]) => (item.consommables?.[k] || 0) > 0)
+      .map(([k, label]) => `${label} : ${item.consommables[k]}`);
+    if (item.consommables?.autre) consoItems.push(`Autre : ${item.consommables.autre}`);
+    const consoDisplay = consoItems.length ? consoItems.join(' · ') : null;
 
     document.getElementById('detail-content').innerHTML = `
       <div class="info-block" style="margin-bottom:16px;">
         <div class="info-block__title">Réservation</div>
         <div class="info-block__body">
           <div class="detail-row"><span class="detail-label">Voyageur</span><span class="detail-value">${item.client_nom || '—'}</span></div>
-          ${item.client_tel ? `<div class="detail-row"><span class="detail-label">Téléphone</span><span class="detail-value">${item.client_tel}</span></div>` : ''}
           ${item.plateforme ? `<div class="detail-row"><span class="detail-label">Plateforme</span><span class="detail-value">${item.plateforme}${item.ref_reservation ? ' · ' + item.ref_reservation : ''}</span></div>` : ''}
           <div class="detail-row"><span class="detail-label">Arrivée</span><span class="detail-value">${formatDate(item.date_arrivee)} à ${formatHeure(item.heure_arrivee)}</span></div>
           <div class="detail-row"><span class="detail-label">Départ</span><span class="detail-value">${formatDate(item.date_depart)} à ${formatHeure(item.heure_depart)}</span></div>
           <div class="detail-row"><span class="detail-label">Durée</span><span class="detail-value">${pluriel(nuits, 'nuit', 'nuits')}</span></div>
-          <div class="detail-row"><span class="detail-label">Voyageurs</span><span class="detail-value">${pluriel(item.nb_voyageurs || 1, 'voyageur', 'voyageurs')}${item.animaux ? ' · Animaux' : ''}${item.lit_bebe ? ' · Lit bébé' : ''}</span></div>
+          <div class="detail-row"><span class="detail-label">Voyageurs</span><span class="detail-value">${voyageursStr}${animauxStr}${litBebeStr}</span></div>
         </div>
       </div>
 
@@ -323,10 +542,17 @@ window.initHostDetail = async function () {
           <div class="detail-row"><span class="detail-label">Agent</span><span class="detail-value">${item.agentName || 'Non assigné'}</span></div>
           <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">${formatDate(item.date_intervention)}</span></div>
           <div class="detail-row"><span class="detail-label">Horaires</span><span class="detail-value">${formatHeure(item.heure_debut)} – ${formatHeure(item.heure_fin)}</span></div>
-          <div class="detail-row"><span class="detail-label">Type</span><span class="detail-value">${typeLabel}</span></div>
           ${item.remarques ? `<div class="detail-row"><span class="detail-label">Remarques</span><span class="detail-value" style="white-space:pre-line;">${item.remarques}</span></div>` : ''}
         </div>
       </div>
+
+      ${consoDisplay ? `
+      <div class="info-block" style="margin-bottom:16px;">
+        <div class="info-block__title">Consommables</div>
+        <div class="info-block__body">
+          <p style="color:var(--text-secondary);font-size:0.875rem;line-height:1.6;">${consoDisplay}</p>
+        </div>
+      </div>` : ''}
 
       ${item.cloture ? `
       <div class="compte-rendu-block">

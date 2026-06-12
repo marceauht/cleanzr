@@ -35,9 +35,11 @@ function formatDateShort(dateStr) {
 
 function formatDay(dateStr) {
   if (!dateStr) return '—';
-  const raw = new Date(dateStr).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  const capitalized = raw.charAt(0).toUpperCase() + raw.slice(1);
-  return `Nous sommes le ${capitalized}`;
+  const d = new Date(dateStr);
+  if (isNaN(d)) return '—';
+  const jours  = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+  const mois   = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  return `Nous sommes le ${jours[d.getDay()]} ${d.getDate()} ${mois[d.getMonth()]} ${d.getFullYear()}.`;
 }
 
 function calcNuits(dateArrivee, dateDepart) {

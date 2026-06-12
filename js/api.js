@@ -76,6 +76,11 @@ async function cancelReservation(id) {
   return gasRequest('cancelReservation', { id });
 }
 
+/* --- Logements -------------------------------------------- */
+async function getLogements() {
+  return gasRequest('getLogements');
+}
+
 /* --- Agents ----------------------------------------------- */
 async function getAgents() {
   return gasRequest('getAgents');

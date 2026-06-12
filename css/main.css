@@ -94,7 +94,7 @@ h3 { font-size: 1rem;     font-weight: 600; }
   border-radius: var(--radius-sm);
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
-  color: var(--text-secondary);
+  color: var(--accent);
   font-size: 1rem;
   cursor: pointer;
   backdrop-filter: var(--blur);

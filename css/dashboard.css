@@ -16,7 +16,7 @@
   font-size: 0.875rem;
   color: var(--text-secondary);
   margin-top: 2px;
-  text-transform: capitalize;
+  text-transform: none;
 }
 
 /* --- Stats row -------------------------------------------- */
@@ -79,6 +79,18 @@
   margin-bottom: 4px;
   opacity: 0.85;
 }
+
+.intervention-card__platform {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  letter-spacing: 0.02em;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.today-card .intervention-card__platform { color: rgba(255,255,255,0.6); }
 
 .intervention-card__logement {
   font-weight: 600;
