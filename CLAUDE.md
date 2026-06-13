@@ -160,7 +160,63 @@ Le GAS est déployé manuellement depuis l'éditeur Google Apps Script :
 
 ---
 
-## 10. Ressources clés
+## 10. Prévisualisation locale (Windows)
+
+L'app est une SPA dont le routeur (`js/router.js`) charge les pages de `pages/`
+via `fetch()`. Ces pages sont des **fragments HTML** (pas de `<html>`, `<head>`
+ni `<body>` — uniquement le contenu injecté dans `#main-app`).
+
+### ⚠️ Ne pas utiliser l'extension Live Server (Ritwick Dey)
+Live Server injecte automatiquement un `<script>` de live-reload dans toute
+réponse `text/html`. Sur un document complet (`index.html`) l'injection est
+propre, mais sur un **fragment** (qui n'a pas de `</body>` où s'ancrer), elle
+corrompt et tronque la réponse. Symptôme observé : dashboard amputé (cartes
+stats coupées, filtres absents) et texte parasite type `TOTAL<` (début du
+`<script>` injecté). Ce bug est **purement local** — GitHub Pages ne fait
+aucune injection, la prod n'est pas affectée. L'option `injectBody: false`
+ne résout pas le problème de façon fiable.
+
+### ✅ Serveur statique pur : `serve`
+Lancer depuis la racine du projet (dossier contenant `index.html`), dans un
+terminal PowerShell :
+
+```powershell
+npx serve . -l 8080
+```
+
+`serve` ne fait aucune injection : les fragments arrivent intacts.
+Aperçu : `http://localhost:8080/index.html#/host/dashboard`
+(pas de rechargement auto — rafraîchir avec F5).
+
+### Accès depuis l'iPhone via ngrok
+Dans un **second** terminal (laisser `serve` tourner) :
+
+```powershell
+ngrok http 8080
+```
+
+Utiliser l'URL `https://<id>.ngrok-free.dev/#/host/dashboard` sur le téléphone.
+ngrok ne fait que relayer la réponse de `serve` : tant que la source est saine,
+l'aperçu mobile l'est aussi.
+
+### Piège : le Service Worker
+`js/notifications.js` enregistre un Service Worker (`/service-worker.js`, FCM).
+Une fois installé, il peut intercepter et resservir d'anciennes réponses, ce qui
+masque les changements. Après un changement de serveur ou en cas d'affichage
+incohérent : DevTools → onglet **Application** → **Service Workers** →
+« Unregister » + cocher « Update on reload », puis **Storage** →
+« Clear site data », puis rouvrir l'onglet.
+
+### Piste de durcissement (optionnel, non prioritaire)
+Pour éliminer définitivement cette classe de bugs, on pourrait passer les pages
+de `fetch()` vers des `<template>` inline dans `index.html` (le routeur les
+clonerait depuis le DOM au lieu de les charger par réseau). Plus aucune requête
+pour les pages → aucune injection possible, comportement identique en local et
+en prod. Refacto à envisager plus tard si besoin.
+
+---
+
+## 11. Ressources clés
 
 | Ressource | Lien / Info |
 |---|---|
@@ -170,3 +226,60 @@ Le GAS est déployé manuellement depuis l'éditeur Google Apps Script :
 | Projet GAS Cleanzr | https://script.google.com/u/0/home/projects/1uU-opWYOGakqMGw_o126AhIhCCJdrVVI1CIE-SS3mqDyQcbaXSVNIjq7/edit |
 | Projet Firebase | https://console.firebase.google.com/project/cleanzr |
 | URL de production | `https://cleanzr.gite-refugedesaintines.com` |
+
+---
+
+## 12. Style de réponse de Claude (efficacité tokens)
+
+### Sortie
+- La réponse vient en premier. Le raisonnement ensuite, jamais avant.
+- Pas de préambule : pas de « Bonne question ! », « Bien sûr ! », « Absolument ! ».
+- Pas de formules de clôture creuses : pas de « J'espère que ça aide ! ».
+- Ne pas reformuler la demande. Si la tâche est claire, exécuter directement.
+- Ne pas annoncer ce qu'on va faire. Le faire.
+- Pas de suggestions non sollicitées. Faire exactement ce qui est demandé.
+
+### Efficacité
+- Compresser les réponses : chaque phrase doit être utile.
+- Ne pas répéter un contexte déjà établi dans la session.
+- Réponses courtes par défaut, sauf si la profondeur est explicitement demandée.
+- Exception Cleanzr : pour les snippets de code, garder les instructions
+  explicites « remplace X par Y » — la clarté prime sur la brièveté ici.
+
+### Typographie - ASCII uniquement
+- Pas de tirets cadratins : utiliser des traits d'union (-).
+- Guillemets droits (" ') et non typographiques.
+- Trois points (...) et non le caractère ellipse.
+- Puces en tiret (-) ou astérisque (*), pas de puces Unicode.
+
+### Anti-flagornerie
+- Ne jamais valider l'utilisateur avant de répondre.
+- Pas de « Vous avez tout à fait raison ! » sauf affirmation vérifiable.
+- Contredire quand c'est faux, directement.
+- Ne pas changer une réponse correcte parce que l'utilisateur insiste.
+
+### Anti-hallucination
+- Ne jamais spéculer sur du code, des fichiers ou des API non lus.
+- Avant de citer un fichier ou une fonction : le lire, puis répondre.
+- En cas de doute : dire « Je ne sais pas. » Ne jamais deviner avec assurance.
+- Ne jamais inventer de chemins, noms de fonctions ou signatures d'API.
+- Si l'utilisateur corrige un fait : l'accepter pour toute la session.
+
+### Code
+- Renvoyer la solution la plus simple qui fonctionne. Pas de sur-ingénierie.
+- Pas d'abstraction ou de helper pour une opération à usage unique.
+- Pas de fonctionnalité spéculative ni de « future-proofing ».
+- Commentaires en ligne seulement là où la logique n'est pas évidente.
+- Lire le fichier avant de le modifier. Jamais d'édition à l'aveugle.
+
+### Avertissements
+- Pas de disclaimer de sécurité sauf risque réel (vie, légal).
+- Pas de « Notez que... », « Gardez à l'esprit que... » superflus.
+
+### Contrôle du périmètre
+- Ne pas ajouter de fonctionnalités au-delà du demandé.
+- Ne pas refactoriser le code alentour en corrigeant un bug.
+- Ne pas créer de nouveaux fichiers sauf nécessité stricte.
+
+### Règle de priorité
+Les instructions explicites de l'utilisateur priment toujours sur cette section.

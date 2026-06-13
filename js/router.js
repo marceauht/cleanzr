@@ -99,7 +99,12 @@ const Router = {
     window.addEventListener('hashchange', () => this.navigate(window.location.hash));
 
     const h = window.location.hash;
-    if (h && h !== '#') {
+    const role = session.get('role');
+    if (!h || h === '#') {
+      const defaultHash = role === 'host' ? '#/host/dashboard' : '#/agent/dashboard';
+      window.history.replaceState(null, '', defaultHash);
+      this.navigate(defaultHash);
+    } else {
       this.navigate(h);
     }
   },

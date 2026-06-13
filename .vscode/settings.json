@@ -2,9 +2,6 @@
   "liveServer.settings.NoBrowser": false,
   "liveServer.settings.donotShowInfoMsg": true,
   "liveServer.settings.CustomBrowser": "chrome",
-  "liveServer.settings.headers": {
-    "Cache-Control": "no-store, no-cache, must-revalidate",
-    "Pragma": "no-cache",
-    "Expires": "0"
-  }
+  "liveServer.settings.injectBody": false,
+  "liveServer.settings.host": "0.0.0.0"
 }

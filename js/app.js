@@ -40,10 +40,6 @@
     if (authScreen) authScreen.classList.add('hidden');
     if (mainApp)    mainApp.classList.remove('hidden');
 
-    const h = window.location.hash;
-    if (!h || h === '#') {
-      window.location.hash = role === 'host' ? '#/host/dashboard' : '#/agent/dashboard';
-    }
     return true;
   }
 
