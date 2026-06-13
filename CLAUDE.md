@@ -229,57 +229,14 @@ en prod. Refacto à envisager plus tard si besoin.
 
 ---
 
-## 12. Style de réponse de Claude (efficacité tokens)
+---
 
-### Sortie
-- La réponse vient en premier. Le raisonnement ensuite, jamais avant.
-- Pas de préambule : pas de « Bonne question ! », « Bien sûr ! », « Absolument ! ».
-- Pas de formules de clôture creuses : pas de « J'espère que ça aide ! ».
-- Ne pas reformuler la demande. Si la tâche est claire, exécuter directement.
-- Ne pas annoncer ce qu'on va faire. Le faire.
-- Pas de suggestions non sollicitées. Faire exactement ce qui est demandé.
+## 12. Style de réponse — spécificités Cleanzr
 
-### Efficacité
-- Compresser les réponses : chaque phrase doit être utile.
-- Ne pas répéter un contexte déjà établi dans la session.
-- Réponses courtes par défaut, sauf si la profondeur est explicitement demandée.
-- Exception Cleanzr : pour les snippets de code, garder les instructions
-  explicites « remplace X par Y » — la clarté prime sur la brièveté ici.
+Les règles de style génériques sont dans le CLAUDE.md global (~/.claude/CLAUDE.md).
+Cette section ne couvre que ce qui est propre à Cleanzr :
 
-### Typographie - ASCII uniquement
-- Pas de tirets cadratins : utiliser des traits d'union (-).
-- Guillemets droits (" ') et non typographiques.
-- Trois points (...) et non le caractère ellipse.
-- Puces en tiret (-) ou astérisque (*), pas de puces Unicode.
-
-### Anti-flagornerie
-- Ne jamais valider l'utilisateur avant de répondre.
-- Pas de « Vous avez tout à fait raison ! » sauf affirmation vérifiable.
-- Contredire quand c'est faux, directement.
-- Ne pas changer une réponse correcte parce que l'utilisateur insiste.
-
-### Anti-hallucination
-- Ne jamais spéculer sur du code, des fichiers ou des API non lus.
-- Avant de citer un fichier ou une fonction : le lire, puis répondre.
-- En cas de doute : dire « Je ne sais pas. » Ne jamais deviner avec assurance.
-- Ne jamais inventer de chemins, noms de fonctions ou signatures d'API.
-- Si l'utilisateur corrige un fait : l'accepter pour toute la session.
-
-### Code
-- Renvoyer la solution la plus simple qui fonctionne. Pas de sur-ingénierie.
-- Pas d'abstraction ou de helper pour une opération à usage unique.
-- Pas de fonctionnalité spéculative ni de « future-proofing ».
-- Commentaires en ligne seulement là où la logique n'est pas évidente.
-- Lire le fichier avant de le modifier. Jamais d'édition à l'aveugle.
-
-### Avertissements
-- Pas de disclaimer de sécurité sauf risque réel (vie, légal).
-- Pas de « Notez que... », « Gardez à l'esprit que... » superflus.
-
-### Contrôle du périmètre
-- Ne pas ajouter de fonctionnalités au-delà du demandé.
-- Ne pas refactoriser le code alentour en corrigeant un bug.
-- Ne pas créer de nouveaux fichiers sauf nécessité stricte.
-
-### Règle de priorité
-Les instructions explicites de l'utilisateur priment toujours sur cette section.
+- Snippets de code : garder les instructions explicites « remplace X par Y ».
+  Pour ce projet, la clarté du copier-coller prime sur la brièveté.
+- Débogage CSS : demander le contenu actuel du fichier plutôt que de deviner
+  (les problèmes viennent souvent de conflits de spécificité ou de typos).
