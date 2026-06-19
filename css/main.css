@@ -2,6 +2,15 @@
    main.css — Reset, layout, composants partagés
    ============================================================ */
 
+/* --- Alias de variables (cohérence avec les specs UI) ------ */
+:root {
+  --primary: var(--accent);
+  --bg-card: #ffffff;
+}
+[data-theme="dark"] {
+  --bg-card: #15151c;
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html { height: 100%; -webkit-text-size-adjust: 100%; }
@@ -235,6 +244,17 @@ h3 { font-size: 1rem;     font-weight: 600; }
 }
 .form-hint { font-size: 0.75rem; color: var(--text-secondary); }
 
+/* --- Validation des champs obligatoires -------------------- */
+.input--error {
+  border-color: var(--danger);
+}
+
+.field-error {
+  font-size: 0.75rem;
+  color: var(--danger);
+  margin-top: 4px;
+}
+
 /* --- Detail rows ------------------------------------------ */
 .detail-row {
   display: flex;
@@ -278,23 +298,30 @@ h3 { font-size: 1rem;     font-weight: 600; }
 .filter-tab.active { background: var(--accent); color: #fff; }
 
 /* --- States ---------------------------------------------- */
+/* Plein écran : centre le spinner dans tout l'espace sous le header fixe */
 .page-loading {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 60vh;
+  width: 100%;
+  min-height: calc(100dvh - var(--header-h, 60px));
+}
+/* Conteneur partiel (ex : liste injectée dans une page déjà rendue) */
+.page-loading--inline {
+  min-height: calc(100dvh - 400px);
 }
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  flex: 1;
   gap: 8px;
-  padding: 48px 24px;
-  color: var(--text-secondary);
+  min-height: calc(100dvh - 400px);
+  color: var(--text-tertiary);
   text-align: center;
 }
-.empty-state__icon { font-size: 2.5rem; opacity: 0.4; margin-bottom: 4px; }
+.empty-state__icon { font-size: 2.5rem; margin-bottom: 8px; }
 .empty-state p { font-size: 0.9375rem; }
 .error-state {
   display: flex;
@@ -354,4 +381,66 @@ h3 { font-size: 1rem;     font-weight: 600; }
 /* --- Scrollbar -------------------------------------------- */
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
+
+/* --- Confirmation bottom sheet (remplace confirm() natif) -- */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1001;
+  visibility: hidden;
+}
+.confirm-overlay.open { visibility: visible; }
+
+.confirm-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+.confirm-overlay.open .confirm-backdrop { opacity: 1; }
+
+.confirm-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-card, #ffffff);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: var(--shadow-lg);
+  padding: 24px;
+  transform: translateY(100%);
+  transition: transform var(--transition-spring);
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+.confirm-overlay.open .confirm-sheet { transform: translateY(0); }
+
+.confirm-sheet__icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 12px;
+  color: var(--danger);
+}
+
+.confirm-sheet__title {
+  font-weight: 700;
+  font-size: 1.0625rem;
+  text-align: center;
+  color: var(--text-primary);
+}
+
+.confirm-sheet__message {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-top: 6px;
+  margin-bottom: 20px;
+}
+
+.confirm-sheet__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 999px; }

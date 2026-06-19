@@ -27,14 +27,11 @@
 }
 
 .intervention-hero__badge {
-  display: inline-block;
-  background: rgba(255,255,255,0.2);
-  color: #fff;
-  padding: 3px 9px;
-  border-radius: 99px;
-  font-size: 0.75rem;
-  font-weight: 600;
   margin-top: 10px;
+}
+.intervention-hero__badge .badge {
+  background: rgba(255,255,255,0.22);
+  color: #fff;
 }
 
 /* --- Info block ------------------------------------------ */

@@ -11,21 +11,26 @@
       </button>
     </div>
     <div class="header-left">
-      <span class="header-title">Nouvelle réservation</span>
+      <span class="header-title" id="form-title">Nouvelle réservation</span>
     </div>
     <div class="header-right" style="width:60px;"></div>
   </header>
 
+  <div id="form-progress" class="form-progress">
+    <span id="progress-label">Étape 1 sur 7</span>
+    <div class="progress-bar"><div class="progress-bar__fill" id="progress-bar-fill"></div></div>
+  </div>
+
   <main class="page-content form-page">
-    <form id="reservation-form" novalidate>
+    <form id="reservation-form" class="form-steps-container" novalidate>
 
       <!-- 1. Logement -->
-      <div class="glass-card form-section">
+      <div class="glass-card form-section" data-step="1">
         <p class="form-section__title">Logement</p>
         <div class="form-stack">
 
           <div class="form-group">
-            <label class="form-label">Logement *</label>
+            <label class="form-label" for="select-logement">Logement *</label>
             <div class="custom-select" id="select-logement" data-value="" role="combobox" aria-haspopup="listbox" aria-expanded="false" tabindex="0">
               <div class="custom-select__trigger">
                 <span class="custom-select__label" id="select-logement-label">Chargement…</span>
@@ -36,20 +41,25 @@
           </div>
 
           <div class="form-group" id="code-acces-group" style="display:none;">
-            <label class="form-label">Code d'accès</label>
+            <label class="form-label" for="input-code-acces">Code d'accès</label>
             <input class="input" id="input-code-acces" type="text" readonly>
+          </div>
+
+          <div class="form-group" id="code-alarme-group" style="display:none;">
+            <label class="form-label" for="input-code-alarme">Code alarme</label>
+            <input class="input" id="input-code-alarme" type="text" readonly>
           </div>
 
         </div>
       </div>
 
       <!-- 2. Réservation -->
-      <div class="glass-card form-section">
+      <div class="glass-card form-section" data-step="2">
         <p class="form-section__title">Réservation</p>
         <div class="form-stack">
 
           <div class="form-group">
-            <label class="form-label">Plateforme *</label>
+            <label class="form-label" for="select-plateforme">Plateforme *</label>
             <div class="custom-select" id="select-plateforme" data-value="" role="combobox" aria-haspopup="listbox" aria-expanded="false" tabindex="0">
               <div class="custom-select__trigger">
                 <span class="custom-select__label" id="select-plateforme-label">— Choisir —</span>
@@ -78,7 +88,7 @@
       </div>
 
       <!-- 3. Voyageur -->
-      <div class="glass-card form-section">
+      <div class="glass-card form-section" data-step="3">
         <p class="form-section__title">Voyageur</p>
         <div class="form-stack">
 
@@ -89,34 +99,23 @@
 
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
             <div class="form-group">
-              <label class="form-label">Adultes</label>
-              <div class="stepper" role="group" aria-label="Nombre d'adultes">
-                <button type="button" class="stepper__btn" id="step-adultes-minus" aria-label="Diminuer" disabled>−</button>
-                <div class="stepper__value" id="step-adultes-value" aria-live="polite">1</div>
-                <button type="button" class="stepper__btn" id="step-adultes-plus" aria-label="Augmenter">+</button>
-              </div>
+              <label class="form-label" for="input-adultes">Adultes</label>
+              <input class="input" id="input-adultes" type="number" min="1" max="20" value="1" inputmode="numeric">
+              <span id="step-adultes-value" hidden>1</span>
             </div>
             <div class="form-group">
-              <label class="form-label">Enfants</label>
-              <div class="stepper" role="group" aria-label="Nombre d'enfants">
-                <button type="button" class="stepper__btn" id="step-enfants-minus" aria-label="Diminuer" disabled>−</button>
-                <div class="stepper__value" id="step-enfants-value" aria-live="polite">0</div>
-                <button type="button" class="stepper__btn" id="step-enfants-plus" aria-label="Augmenter">+</button>
-              </div>
+              <label class="form-label" for="input-enfants">Enfants</label>
+              <input class="input" id="input-enfants" type="number" min="0" max="20" value="0" inputmode="numeric">
+              <span id="step-enfants-value" hidden>0</span>
             </div>
             <div class="form-group">
-              <label class="form-label">Bébés</label>
-              <div class="stepper" role="group" aria-label="Nombre de bébés">
-                <button type="button" class="stepper__btn" id="step-bebes-minus" aria-label="Diminuer" disabled>−</button>
-                <div class="stepper__value" id="step-bebes-value" aria-live="polite">0</div>
-                <button type="button" class="stepper__btn" id="step-bebes-plus" aria-label="Augmenter">+</button>
-              </div>
+              <label class="form-label" for="input-bebes">Bébés</label>
+              <input class="input" id="input-bebes" type="number" min="0" max="20" value="0" inputmode="numeric">
+              <span id="step-bebes-value" hidden>0</span>
             </div>
           </div>
 
-          <div style="font-size:0.8125rem;color:var(--text-secondary);padding:4px 0 2px;">
-            Total : <strong id="voyageurs-total" style="color:var(--text-primary);">1 voyageur</strong>
-          </div>
+          <div class="recap-total" id="recap-voyageurs">1 voyageur</div>
 
           <div class="form-group">
             <span class="form-label">Options séjour</span>
@@ -126,7 +125,7 @@
                 <input type="checkbox" id="toggle-animaux" class="toggle-input">
               </label>
               <div id="nb-animaux-group" class="slide-down" style="display:none;">
-                <label class="form-label" style="margin-bottom:6px;display:block;">Nombre d'animaux</label>
+                <span class="form-label" style="margin-bottom:6px;display:block;">Nombre d'animaux</span>
                 <div class="stepper" role="group" aria-label="Nombre d'animaux">
                   <button type="button" class="stepper__btn" id="step-animaux-minus" aria-label="Diminuer" disabled>−</button>
                   <div class="stepper__value" id="step-animaux-value" aria-live="polite">1</div>
@@ -144,7 +143,7 @@
       </div>
 
       <!-- 4. Dates -->
-      <div class="glass-card form-section">
+      <div class="glass-card form-section" data-step="4">
         <p class="form-section__title">Dates</p>
         <div class="form-stack">
 
@@ -155,7 +154,7 @@
             </div>
             <div class="form-group">
               <label class="form-label" for="input-heure-arrivee">Heure</label>
-              <input class="input" id="input-heure-arrivee" type="text" placeholder="16:00">
+              <input class="input" id="input-heure-arrivee" type="text" placeholder="HH:MM" inputmode="numeric" maxlength="5" value="16:00">
             </div>
           </div>
 
@@ -166,25 +165,22 @@
             </div>
             <div class="form-group">
               <label class="form-label" for="input-heure-depart">Heure</label>
-              <input class="input" id="input-heure-depart" type="text" placeholder="11:00">
+              <input class="input" id="input-heure-depart" type="text" placeholder="HH:MM" inputmode="numeric" maxlength="5" value="11:00">
             </div>
           </div>
 
-          <div class="date-summary" id="date-summary" style="display:none;">
-            <span class="date-summary__label">Durée du séjour</span>
-            <span class="date-summary__value" id="date-nuits">—</span>
-          </div>
+          <div class="recap-total" id="date-summary" style="display:none;">—</div>
 
         </div>
       </div>
 
       <!-- 5. Intervention -->
-      <div class="glass-card form-section">
+      <div class="glass-card form-section" data-step="5">
         <p class="form-section__title">Intervention</p>
         <div class="form-stack">
 
           <div class="form-group">
-            <label class="form-label">Agent assigné *</label>
+            <label class="form-label" for="select-agent">Agent assigné *</label>
             <div class="custom-select" id="select-agent" data-value="" role="combobox" aria-haspopup="listbox" aria-expanded="false" tabindex="0">
               <div class="custom-select__trigger">
                 <span class="custom-select__label" id="select-agent-label">Chargement…</span>
@@ -202,11 +198,11 @@
           <div class="date-range">
             <div class="form-group">
               <label class="form-label" for="input-heure-debut">Début</label>
-              <input class="input" id="input-heure-debut" type="text" placeholder="11:00">
+              <input class="input" id="input-heure-debut" type="text" placeholder="HH:MM" inputmode="numeric" maxlength="5" value="11:00">
             </div>
             <div class="form-group">
               <label class="form-label" for="input-heure-fin">Fin</label>
-              <input class="input" id="input-heure-fin" type="text" placeholder="15:00">
+              <input class="input" id="input-heure-fin" type="text" placeholder="HH:MM" inputmode="numeric" maxlength="5" value="15:00">
             </div>
           </div>
 
@@ -219,7 +215,7 @@
       </div>
 
       <!-- 6. Linge -->
-      <div class="glass-card form-section">
+      <div class="glass-card form-section" data-step="6">
         <p class="form-section__title">Linge à prévoir</p>
         <div class="form-stack">
           <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
@@ -247,90 +243,9 @@
               <label class="form-label" for="linge-tapis">Tapis de bain</label>
               <input class="input" id="linge-tapis" type="number" min="0" value="0">
             </div>
-            <div class="form-group" style="grid-column:1 / -1; display:flex; flex-direction:column; align-items:center;">
+            <div class="form-group">
               <label class="form-label" for="linge-torchons">Torchons</label>
-              <input class="input" id="linge-torchons" type="number" min="0" value="0" style="max-width:120px;">
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 7. Consommables -->
-      <div class="glass-card form-section">
-        <p class="form-section__title">Consommables à prévoir</p>
-        <div class="form-stack">
-          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
-            <div class="form-group">
-              <label class="form-label" for="conso-gel-douche">Gel douche</label>
-              <input class="input" id="conso-gel-douche" type="number" min="0" value="0">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="conso-shampoing">Shampoing</label>
-              <input class="input" id="conso-shampoing" type="number" min="0" value="0">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="conso-apres-shampoing">Après-shampoing</label>
-              <input class="input" id="conso-apres-shampoing" type="number" min="0" value="0">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="conso-savon">Savon</label>
-              <input class="input" id="conso-savon" type="number" min="0" value="0">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="conso-kit-hygiene">Kit d'hygiène</label>
-              <input class="input" id="conso-kit-hygiene" type="number" min="0" value="0">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="conso-brosse-dents">Brosse à dents</label>
-              <input class="input" id="conso-brosse-dents" type="number" min="0" value="0">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="conso-boules-quies">Boules quies</label>
-              <input class="input" id="conso-boules-quies" type="number" min="0" value="0">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="conso-cafe">Café</label>
-              <input class="input" id="conso-cafe" type="number" min="0" value="0">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="conso-the">Thé</label>
-              <input class="input" id="conso-the" type="number" min="0" value="0">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="conso-sucre">Sucre</label>
-              <input class="input" id="conso-sucre" type="number" min="0" value="0">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="conso-sel-poivre">Sel &amp; poivre</label>
-              <input class="input" id="conso-sel-poivre" type="number" min="0" value="0">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="conso-huile-olive">Huile d'olive</label>
-              <input class="input" id="conso-huile-olive" type="number" min="0" value="0">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="conso-liquide-vaisselle">Liquide vaisselle</label>
-              <input class="input" id="conso-liquide-vaisselle" type="number" min="0" value="0">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="conso-eponge">Éponge</label>
-              <input class="input" id="conso-eponge" type="number" min="0" value="0">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="conso-sacs-poubelle">Sacs poubelle</label>
-              <input class="input" id="conso-sacs-poubelle" type="number" min="0" value="0">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="conso-essuie-tout">Papier essuie-tout</label>
-              <input class="input" id="conso-essuie-tout" type="number" min="0" value="0">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="conso-eau">Bouteille d'eau</label>
-              <input class="input" id="conso-eau" type="number" min="0" value="0">
-            </div>
-            <div class="form-group" style="grid-column:1 / -1;">
-              <label class="form-label" for="conso-autre">Autre</label>
-              <input class="input" id="conso-autre" type="text" placeholder="Précisez…" autocomplete="off">
+              <input class="input" id="linge-torchons" type="number" min="0" value="0">
             </div>
           </div>
         </div>
@@ -339,9 +254,8 @@
     </form>
 
     <div class="form-submit-bar">
-      <button type="submit" form="reservation-form" class="btn btn--primary btn--full btn--lg" id="btn-submit">
-        Créer la réservation
-      </button>
+      <button type="button" id="btn-prev" class="btn btn--secondary">Retour</button>
+      <button type="button" id="btn-next" class="btn btn--primary">Suivant</button>
     </div>
   </main>
 

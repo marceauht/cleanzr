@@ -52,9 +52,6 @@
   <link rel="stylesheet" href="css/dashboard.css">
   <link rel="stylesheet" href="css/form.css">
   <link rel="stylesheet" href="css/agent.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
 </head>
 <body>
 
@@ -136,7 +133,10 @@
             </button>
           </div>
 
-          <button class="btn-link" id="pin-secondary-btn" hidden></button>
+          <div id="pin-secondary-row" hidden>
+            <button class="btn-link" id="pin-secondary-btn"></button>
+            <button class="btn-link" id="pin-secondary-btn2" hidden></button>
+          </div>
           <button class="btn btn--primary btn--full" id="btn-change-profile" hidden>
             Changer de profil
           </button>
@@ -166,7 +166,6 @@
       <!-- Spinner global (superposé aux panels) -->
       <div id="auth-spinner" class="auth-spinner hidden" role="status" aria-live="polite">
         <div class="spinner"></div>
-        <span>Vérification…</span>
       </div>
 
     </div>

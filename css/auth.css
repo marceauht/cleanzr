@@ -81,7 +81,7 @@
   border-radius: 50%;
   border: 2px solid var(--border-color);
   background: transparent;
-  transition: background var(--transition-spring), border-color var(--transition-spring), transform var(--transition-spring), opacity var(--transition-spring);
+  transition: background 0.15s ease, border-color 0.15s ease, transform var(--transition-spring), opacity var(--transition-spring);
   opacity: 0.6;
 }
 
@@ -92,6 +92,20 @@
   opacity: 1;
 }
 
+#pin-secondary-row {
+  position: absolute;
+  bottom: 14px;
+  left: 32px;
+  right: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#panel-pin {
+  padding-bottom: 42px;
+}
+
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   20%       { transform: translateX(-6px); }
@@ -99,7 +113,23 @@
   60%       { transform: translateX(-4px); }
   80%       { transform: translateX(4px); }
 }
-.pin-display--shake { animation: shake 0.45s ease; }
+.pin-display--shake { animation: shake 0.8s ease; }
+
+.pin-display--error .pin-dot {
+  border-color: var(--danger);
+  background: transparent;
+  opacity: 1;
+}
+
+.pin-display--error.pin-display--shake .pin-dot {
+  background: var(--danger);
+  transition: none;
+}
+
+.pin-display--error .pin-dot--filled {
+  background: var(--accent);
+  border-color: var(--danger);
+}
 
 /* --- PIN label -------------------------------------------- */
 .pin-label {
@@ -110,7 +140,19 @@
   min-height: 20px;
   transition: color var(--transition);
 }
-.pin-label--error { color: var(--danger); }
+
+@keyframes shake-label {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-5px); }
+  40%       { transform: translateX(5px); }
+  60%       { transform: translateX(-3px); }
+  80%       { transform: translateX(3px); }
+}
+
+.pin-label--error {
+  color: var(--danger);
+  animation: shake-label 0.8s ease;
+}
 
 /* --- PIN keyboard ----------------------------------------- */
 .pin-keyboard {
@@ -264,6 +306,36 @@
 .role-btn__label { font-family: var(--font-heading); font-size: 0.9375rem; font-weight: 700; color: var(--text-primary); }
 .role-btn__desc  { font-size: 0.6875rem; color: var(--text-secondary); text-align: center; line-height: 1.35; }
 .role-btn--active .role-btn__label { color: var(--accent); }
+
+/* --- Erreur inline sous un champ auth --------------------- */
+.input--error,
+.input--error:focus {
+  border-color: var(--danger) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 20%, transparent) !important;
+  animation: shake-label 0.5s ease;
+}
+
+.auth-field-error {
+  font-size: 0.8125rem;
+  color: var(--danger);
+  margin-top: 4px;
+  width: 100%;
+  text-align: left;
+  animation: shake-label 0.5s ease;
+}
+
+#panel-forgot .auth-field-error {
+  text-align: center;
+}
+
+/* Role selector en erreur */
+.role-selector--error .role-btn {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 20%, transparent);
+  animation: shake-label 0.5s ease;
+}
+.role-selector--error .role-btn__icon  { color: var(--danger); }
+.role-selector--error .role-btn__label { color: var(--danger); }
 
 /* --- Link button ----------------------------------------- */
 .btn-link {

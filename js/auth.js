@@ -132,7 +132,7 @@
         showPanel('panel-pin');
         setGreeting(null);
         setTitle('Entrez votre code PIN');
-        setSecondary('Retour', () => enterState(S.CREATE_IDENTITY));
+        setSecondary('Retour', () => enterState(S.CREATE_IDENTITY), 'PIN oublié ?', () => enterState(S.FORGOT_NAME));
         break;
 
       case S.FORGOT_NAME: {
@@ -165,6 +165,7 @@
   function clearPin() {
     pin = '';
     updateDots();
+    document.getElementById('pin-display')?.classList.remove('pin-display--error');
   }
 
   function updateDots() {
@@ -178,7 +179,13 @@
     const el = document.getElementById('pin-label');
     if (!el) return;
     el.textContent = text;
-    el.classList.toggle('pin-label--error', isError);
+    if (isError) {
+      el.classList.remove('pin-label--error');
+      void el.offsetWidth; // force le reflow
+      el.classList.add('pin-label--error');
+    } else {
+      el.classList.remove('pin-label--error');
+    }
   }
 
   function setGreeting(text) {
@@ -193,13 +200,27 @@
     if (el) el.textContent = text;
   }
 
-  function setSecondary(label, handler) {
-    const btn = document.getElementById('pin-secondary-btn');
-    if (!btn) return;
-    btn.hidden = !label;
-    if (label) {
-      btn.textContent = label;
-      btn.onclick = handler;
+  function setSecondary(label, handler, label2 = null, handler2 = null) {
+    const row  = document.getElementById('pin-secondary-row');
+    const btn  = document.getElementById('pin-secondary-btn');
+    const btn2 = document.getElementById('pin-secondary-btn2');
+    if (!btn || !row) return;
+
+    if (!label) {
+      row.hidden = true;
+      return;
+    }
+
+    btn.textContent = label;
+    btn.onclick = handler;
+    row.hidden = false;
+
+    if (label2) {
+      btn2.textContent = label2;
+      btn2.onclick = handler2;
+      btn2.hidden = false;
+    } else {
+      btn2.hidden = true;
     }
   }
 
@@ -217,7 +238,30 @@
     el.classList.remove('pin-display--shake');
     void el.offsetWidth;
     el.classList.add('pin-display--shake');
+    el.classList.add('pin-display--error');
     el.addEventListener('animationend', () => el.classList.remove('pin-display--shake'), { once: true });
+  }
+
+  // Affiche un message d'erreur sous un champ/élément du panel actif
+  function afficherErreurAuth(elementId, message) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    const panel = el.closest('.auth-panel');
+    panel?.querySelectorAll('.auth-field-error').forEach(e => e.remove());
+
+    const p = document.createElement('p');
+    p.className = 'auth-field-error';
+    p.textContent = message;
+    el.insertAdjacentElement('afterend', p);
+
+    if (el.tagName === 'INPUT') el.classList.add('input--error');
+  }
+
+  function effacerErreurAuth(elementId) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    el.classList.remove('input--error');
+    el.closest('.auth-panel')?.querySelector('.auth-field-error')?.remove();
   }
 
   /* --- Clavier PIN --------------------------------------- */
@@ -310,6 +354,14 @@
         try {
           const res = await verifierPin(hash);
           if (res.success) {
+            // En LOGIN : vérifier que le PIN correspond bien au profil enregistré localement
+            if (state === S.LOGIN && pendingNom && res.nom?.toLowerCase() !== pendingNom.toLowerCase()) {
+              shake();
+              setLabel('Code incorrect - Réessayez', true);
+              clearPin();
+              setLoading(false);
+              return;
+            }
             saveLocalProfile(res.nom, res.role);
             session.set('role',   res.role);
             session.set('name',   res.nom);
@@ -317,12 +369,12 @@
             onAuthSuccess(res.role);
           } else {
             shake();
-            setLabel('Code incorrect — réessayez', true);
+            setLabel('Code incorrect - Réessayez', true);
             clearPin();
           }
         } catch {
           shake();
-          setLabel('Erreur réseau — réessayez', true);
+          setLabel('Erreur réseau - Réessayez', true);
           clearPin();
         }
         setLoading(false);
@@ -373,18 +425,19 @@
         document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('role-btn--active'));
         btn.classList.add('role-btn--active');
         selectedRole = btn.dataset.role;
+        document.querySelector('.role-selector')?.classList.remove('role-selector--error');
+        effacerErreurAuth('role-selector');
       });
     });
 
     document.getElementById('btn-creation-next')?.addEventListener('click', () => {
       const nom = document.getElementById('input-nom')?.value.trim() || '';
       if (!selectedRole) {
-        toast('Choisissez un rôle : Hôte ou Agent', 'error');
+        document.querySelector('.role-selector')?.classList.add('role-selector--error');
         return;
       }
       if (nom.length < 2) {
-        toast('Entrez votre prénom ou nom (min. 2 caractères)', 'error');
-        document.getElementById('input-nom')?.focus();
+        afficherErreurAuth('input-nom', 'Remplissez ce champ');
         return;
       }
       enterState(S.CREATE_PIN, { role: selectedRole, nom });
@@ -394,6 +447,7 @@
     document.getElementById('input-nom')?.addEventListener('keydown', e => {
       if (e.key === 'Enter') document.getElementById('btn-creation-next')?.click();
     });
+    document.getElementById('input-nom')?.addEventListener('input', () => effacerErreurAuth('input-nom'));
 
     document.getElementById('btn-deja-acces')?.addEventListener('click', () => {
       enterState(S.EXISTING_ACCESS);
@@ -417,12 +471,13 @@
     document.getElementById('input-forgot-nom')?.addEventListener('keydown', e => {
       if (e.key === 'Enter') submitForgotName();
     });
+    document.getElementById('input-forgot-nom')?.addEventListener('input', () => effacerErreurAuth('input-forgot-nom'));
   }
 
   async function submitForgotName() {
     const nom = document.getElementById('input-forgot-nom')?.value.trim() || '';
     if (nom.length < 2) {
-      toast('Entrez votre nom (min. 2 caractères)', 'error');
+      afficherErreurAuth('input-forgot-nom', 'Remplissez ce champ');
       return;
     }
 
@@ -434,10 +489,10 @@
       if (res.found) {
         enterState(S.FORGOT_NEW_PIN, { nom });
       } else {
-        toast('Aucun compte trouvé avec ce nom', 'error');
+        afficherErreurAuth('input-forgot-nom', 'Aucun compte trouvé');
       }
     } catch {
-      toast('Erreur réseau — réessayez', 'error');
+      afficherErreurAuth('input-forgot-nom', 'Erreur réseau');
     } finally {
       if (btn) { btn.disabled = false; btn.textContent = 'Vérifier'; }
     }
