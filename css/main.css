@@ -11,7 +11,7 @@
   --bg-card: #15151c;
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; }
 
 html { height: 100%; -webkit-text-size-adjust: 100%; }
 
@@ -53,6 +53,7 @@ h3 { font-size: 1rem;     font-weight: 600; }
 }
 
 /* --- Header ---------------------------------------------- */
+/* Header général — flex (dashboard, formulaires) */
 .app-header {
   position: sticky;
   top: 0;
@@ -69,8 +70,25 @@ h3 { font-size: 1rem;     font-weight: 600; }
   box-shadow: var(--shadow-sm);
 }
 
+/* Header pages de détail — grid 3 colonnes symétriques */
+.app-header--detail {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  padding: 0 10px;
+}
+.app-header--detail .header-left  { display: flex; align-items: center; }
+.app-header--detail .header-right { display: flex; align-items: center; justify-content: flex-end; }
+.app-header--detail .header-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  overflow: hidden;
+}
+
 .header-left  { display: flex; align-items: center; gap: 8px; }
-.header-right { display: flex; align-items: center; gap: 8px; }
+.header-right { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
 
 .header-logo {
   font-family: var(--font-heading);
@@ -85,6 +103,33 @@ h3 { font-size: 1rem;     font-weight: 600; }
   font-size: 1rem;
   font-weight: 600;
   color: var(--text-primary);
+}
+
+/* Zone centrale : titre sur une ou deux lignes */
+.header-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  overflow: hidden;
+}
+.header-title-main {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.header-title-sub {
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .header-user {
@@ -176,11 +221,12 @@ h3 { font-size: 1rem;     font-weight: 600; }
 .btn-back {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
   color: var(--text-secondary);
-  padding: 6px 2px;
+  border-radius: var(--radius-sm);
   transition: color var(--transition);
 }
 .btn-back:hover { color: var(--accent); }
@@ -235,7 +281,7 @@ h3 { font-size: 1rem;     font-weight: 600; }
   box-shadow: 0 0 0 3px var(--accent-bg);
   outline: none;
 }
-.textarea::placeholder { color: var(--text-tertiary); }
+.textarea::placeholder { color: var(--text-secondary); }
 
 .form-row {
   display: grid;
@@ -346,6 +392,8 @@ h3 { font-size: 1rem;     font-weight: 600; }
 .spinner--sm { width: 18px; height: 18px; border-width: 2px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+
+
 /* --- Toast ------------------------------------------------ */
 .toast-container {
   position: fixed;
@@ -423,6 +471,10 @@ h3 { font-size: 1rem;     font-weight: 600; }
   color: var(--danger);
 }
 
+.confirm-sheet__icon--accent {
+  color: var(--accent); 
+}
+
 .confirm-sheet__title {
   font-weight: 700;
   font-size: 1.0625rem;
@@ -444,3 +496,14 @@ h3 { font-size: 1rem;     font-weight: 600; }
   gap: 10px;
 }
 ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 999px; }
+
+@keyframes badge-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
+/* Point du badge En attente / En cours — cards dashboard */
+.badge--warning::before,
+.badge--accent::before {
+  animation: badge-pulse 1.5s ease-in-out infinite;
+}

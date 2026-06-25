@@ -219,8 +219,10 @@
       btn2.textContent = label2;
       btn2.onclick = handler2;
       btn2.hidden = false;
+      row.style.justifyContent = 'space-between';
     } else {
       btn2.hidden = true;
+      row.style.justifyContent = 'center';
     }
   }
 

@@ -48,6 +48,14 @@ async function getIntervention(id) {
   return gasRequest('getIntervention', { id });
 }
 
+async function debuterIntervention(id) {
+  return gasRequest('debuterIntervention', { id });
+}
+
+async function getCloture(interventionId) {
+  return gasRequest('getCloture', { id: interventionId });
+}
+
 /* --- Réservation ------------------------------------------ */
 async function creerReservation(data) {
   const userId = session.get('userId');
@@ -61,13 +69,11 @@ async function creerReservation(data) {
 
 /* --- Clôture ---------------------------------------------- */
 async function cloturerIntervention(id, data) {
-  const userId = session.get('userId');
-  const url = new URL(GAS_URL);
-  url.searchParams.set('action', 'cloturerIntervention');
-  url.searchParams.set('userId', userId);
-  url.searchParams.set('id', id);
-  url.searchParams.set('data', JSON.stringify(data));
-  const res = await fetch(url.toString(), { method: 'GET', redirect: 'follow' });
+  const res = await fetch(GAS_URL, {
+    method:   'POST',
+    body:     JSON.stringify({ action: 'cloturerIntervention', userId: session.get('userId'), id, data }),
+    redirect: 'follow',
+  });
   return res.json();
 }
 

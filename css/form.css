@@ -325,6 +325,10 @@
   gap: 12px;
   padding: 16px;
   z-index: 50;
+  background: var(--bg-glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border-top: 1px solid var(--border-color);
 }
 
 .form-submit-bar .btn {

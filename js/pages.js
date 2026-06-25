@@ -145,7 +145,7 @@ window.initDashboard = async function () {
               : `<div style="font-size:0.8125rem;color:var(--text-secondary);margin-bottom:0px;">
                   ${item.nb_voyageurs || (item.nb_adultes || 1)} voyageur${(item.nb_voyageurs || (item.nb_adultes || 1)) > 1 ? 's' : ''}${item.nb_animaux > 0 ? ' · 🐾' : ''}${item.lit_bebe ? ' · 🍼' : ''}
                 </div>
-                <div style="width:100%;display:flex;justify-content:space-between;align-items:center;margin-top:-2px;">
+                <div style="width:100%;display:flex;justify-content:space-between;align-items:flex-end;margin-top:2px;">
                   <div class="intervention-card__agent">
                     ${hDepart !== '—' ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>` : ''}
                     <span>${hDepart !== '—' ? `<span style="color:var(--accent);font-weight:500;">Départ client : ${hDepart}</span>` : ''}</span>
@@ -383,17 +383,20 @@ function initDatePicker(inputEl, opts) {
 /* ---------------------------------------------------------- */
 
 // Retourne Promise<boolean> : true si confirmé, false si backdrop / Échap / bouton "non"
-function confirmerAction({ titre, message, labelOui = 'Confirmer', labelNon = 'Annuler', danger = true }) {
+function confirmerAction({ titre, message, labelOui = 'Confirmer', labelNon = 'Annuler', danger = true, icone }) {
   return new Promise((resolve) => {
+    const iconeDefaut = `
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+      </svg>`;
+
     const overlay = document.createElement('div');
     overlay.className = 'confirm-overlay';
     overlay.innerHTML = `
       <div class="confirm-backdrop"></div>
       <div class="confirm-sheet" role="alertdialog" aria-modal="true" aria-labelledby="confirm-sheet-titre">
-        <div class="confirm-sheet__icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-          </svg>
+        <div class="confirm-sheet__icon${danger ? '' : ' confirm-sheet__icon--accent'}">
+          ${icone || iconeDefaut}
         </div>
         <h2 class="confirm-sheet__title" id="confirm-sheet-titre">${titre}</h2>
         <p class="confirm-sheet__message">${message}</p>
@@ -505,7 +508,10 @@ window.initHostNewReservation = async function () {
   document.getElementById('btn-back')?.addEventListener('click', () => history.back());
 
   // --- Mode édition : pré-chargement d'une réservation existante ---
+  // Lire ET supprimer immédiatement — évite la persistance du flag
+  // si l'utilisateur quitte le formulaire avant la fin de l'init
   const editData    = session.get('edit_reservation');
+  session.remove('edit_reservation');
   const modeEdition = !!editData;
   if (modeEdition) {
     const titre = document.getElementById('form-title');
@@ -957,7 +963,6 @@ window.initHostNewReservation = async function () {
 
   if (modeEdition) {
     preremplirFormulaire(editData);
-    session.remove('edit_reservation');
   }
 };
 
@@ -969,13 +974,48 @@ function buildDetailHero(item) {
   return `
     <div class="intervention-hero">
       <div class="intervention-hero__logement">${item.client_nom || '—'}</div>
-      <div class="intervention-hero__meta">
-        <span>${formatDate(item.date_arrivee)} → ${formatDate(item.date_depart)}</span>
-        <span>${pluriel(nuits, 'nuit', 'nuits')}</span>
-      </div>
+      <div class="intervention-hero__dates">${formatDate(item.date_arrivee)} → ${formatDate(item.date_depart)}</div>
+      <div class="intervention-hero__nuits">${pluriel(nuits, 'nuit', 'nuits')}</div>
       <div class="intervention-hero__badge">${statutBadge(item.statut)}</div>
     </div>
   `;
+}
+
+function buildVoyageursChips(item) {
+  const nb_adultes = item.nb_adultes || 0;
+  const nb_enfants = item.nb_enfants || 0;
+  const nb_bebes   = item.nb_bebes   || 0;
+  const chips = [];
+  if (nb_adultes > 0) chips.push(`
+    <span class="voyageur-chip">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      ${pluriel(nb_adultes, 'adulte', 'adultes')}
+    </span>`);
+  if (nb_enfants > 0) chips.push(`
+    <span class="voyageur-chip">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="7" r="3.5"/>
+        <path d="M5 21c0-3.5 3.1-6 7-6s7 2.5 7 6"/>
+        <path d="M12 10.5v3"/>
+      </svg>
+      ${pluriel(nb_enfants, 'enfant', 'enfants')}
+    </span>`);
+  if (nb_bebes > 0) chips.push(`
+    <span class="voyageur-chip">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 6h2l3 9h8l2-6H8"/>
+        <circle cx="10" cy="19" r="1.5"/>
+        <circle cx="17" cy="19" r="1.5"/>
+        <path d="M5 6L4 3"/>
+      </svg>
+      ${pluriel(nb_bebes, 'bébé', 'bébés')}
+    </span>`);
+  if (!chips.length) return '';
+  return `
+    <div class="info-row-voyageurs">
+      <span class="detail-label">Voyageurs</span>
+      <div class="voyageur-chips">${chips.join('')}</div>
+    </div>`;
 }
 
 const LINGE_LABELS = {
@@ -983,10 +1023,128 @@ const LINGE_LABELS = {
   serv_bain: 'Serv. bain', serv_mains: 'Serv. mains',
   tapis: 'Tapis de bain', torchons: 'Torchons',
 };
-function buildLingeItems(linge) {
-  return Object.entries(LINGE_LABELS)
+// Accorde un label de linge au singulier/pluriel selon la quantité (ex: "Drap" / "Draps")
+function pluraliserLabel(label, count) {
+  const base = label.endsWith('s') ? label.slice(0, -1) : label;
+  return count > 1 ? base + 's' : base;
+}
+
+function buildLingeHTML(linge, cochesFilter = null) {
+  const items = Object.entries(LINGE_LABELS)
+    .filter(([k]) => (linge?.[k] || 0) > 0 && (cochesFilter === null || cochesFilter.includes(k)))
+    .map(([k, label]) => ({ label: pluraliserLabel(label, linge[k]), count: linge[k] }));
+  if (!items.length) return '';
+
+  const isImpair     = items.length % 2 === 1;
+  const lastRowStart = isImpair ? items.length - 1 : items.length - 2;
+
+  return items.map(({ label, count }, i) => {
+    const noBorderBottom = i >= lastRowStart;
+    return `<div class="linge-cell${noBorderBottom ? ' linge-cell--no-bottom' : ''}">
+      <span class="linge-cell__label">${label}</span>
+      <span class="linge-cell__count">${count}</span>
+    </div>`;
+  }).join('');
+}
+
+// Une ligne de checklist linge cochable (item standard ou « Lit bébé installé »)
+function buildLingeCheckRowHTML({ key, label, count, spanFull, checked }) {
+  return `
+    <label class="linge-check-row${spanFull ? ' linge-check-row--full' : ''}">
+      <input type="checkbox" class="linge-check-input" data-linge-check="${key}"${checked ? ' checked' : ''}>
+      <span class="linge-check-box">
+        <svg class="linge-check-box-mark" viewBox="0 0 12 10" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="1 5.5 4.5 9 11 1"/>
+        </svg>
+      </span>
+      <span class="linge-check-label">${label}</span>
+      <span class="linge-spacer"></span>
+      <span class="linge-check-count">${count}</span>
+    </label>`;
+}
+
+// Bloc Linge complet (clôture agent) : items cochables + lit bébé + toggle « Linge manquant ».
+// Renvoie '' si aucun article > 0 (bloc absent, traité comme valide ailleurs).
+function buildLingeBlocHTML(linge, litBebe, draft) {
+  const items = Object.entries(LINGE_LABELS)
     .filter(([k]) => (linge?.[k] || 0) > 0)
-    .map(([k, label]) => `${label} : ${linge[k]}`);
+    .map(([k, label]) => ({ key: k, label, count: linge[k] }));
+  if (!items.length) return '';
+
+  const lingeCoches = draft?.lingeCoches || [];
+  const isOdd = items.length % 2 === 1;
+
+  const rows = items.map(({ key, label, count }, i) => buildLingeCheckRowHTML({
+    key, label, count,
+    spanFull: isOdd && i === items.length - 1,
+    checked: lingeCoches.includes(key),
+  })).join('');
+
+  const manquantActif = !!draft?.lingeManquantActif;
+  const bebeActif = lingeCoches.includes('lit_bebe');
+
+  return `
+    <div class="linge-checklist">${rows}</div>
+    <div class="linge-manquant">
+      <label class="toggle-label">
+        <span>Linge manquant</span>
+        <input type="checkbox" class="toggle-input" id="toggle-linge-manquant"${manquantActif ? ' checked' : ''}>
+      </label>
+      <div class="slide-down${manquantActif ? ' is-open' : ''}" id="linge-manquant-slide">
+        <div class="slide-down__inner">
+          <textarea class="input" id="linge-manquant-texte" rows="2" placeholder="Précisez...">${draft?.lingeManquantTexte || ''}</textarea>
+        </div>
+      </div>
+      ${litBebe ? `
+      <label class="toggle-label">
+        <span>Lit bébé installé</span>
+        <input type="checkbox" class="toggle-input" data-linge-check="lit_bebe"${bebeActif ? ' checked' : ''}>
+      </label>` : ''}
+    </div>`;
+}
+
+// 7 signalements standards + RAS (exclusif). Les 3 marqués texteRequis ouvrent un champ obligatoire.
+const SIGNALEMENTS_OPTIONS = [
+  { type: 'Mobilier abîmé' },
+  { type: 'Tâche(s) tenace(s)' },
+  { type: 'Literie détériorée' },
+  { type: 'Casse(s) / bris' },
+  { type: 'Manque de stock', texteRequis: true, placeholder: 'Précisez…' },
+  { type: 'Autre(s) problème(s)', texteRequis: true, placeholder: 'Précisez...' },
+  { type: 'Vol', texteRequis: true, placeholder: 'Précisez…' },
+];
+
+function buildSignalementsHTML(draft) {
+  const etats = draft?.signalements || {};
+
+  const items = SIGNALEMENTS_OPTIONS.map(opt => {
+    const etat    = etats[opt.type] || {};
+    const checked = !!etat.checked;
+    const champHTML = opt.texteRequis ? `
+      <div class="slide-down${checked ? ' is-open' : ''}" data-signalement-slide="${opt.type}">
+        <div class="slide-down__inner">
+          <textarea class="input" data-signalement-texte="${opt.type}" rows="2" placeholder="${opt.placeholder}">${etat.texte || ''}</textarea>
+        </div>
+      </div>` : '';
+    return `
+      <div class="signalement-col">
+        <label class="signalement-item">
+          <input type="checkbox" data-signalement="${opt.type}"${checked ? ' checked' : ''}>
+          <span class="signalement-check"></span>
+          <span>${opt.type}</span>
+        </label>
+        ${champHTML}
+      </div>`;
+  }).join('');
+
+  const rasHTML = `
+    <label class="signalement-item signalement-item--ras">
+      <input type="checkbox" id="signalement-ras"${draft?.signalementRAS ? ' checked' : ''}>
+      <span class="signalement-check"></span>
+      <span>Rien à signaler</span>
+    </label>`;
+
+  return `<div class="signalement-grid" id="signalement-grid">${items}${rasHTML}</div>`;
 }
 
 /* ---------------------------------------------------------- */
@@ -1005,22 +1163,33 @@ window.initHostDetail = async function () {
     const item = res?.intervention;
     if (!item) throw new Error('Intervention non trouvée');
 
-    setHTML('#header-badge', statutBadge(item.statut));
+    setText('#header-title-main', item.client_nom || '—');
 
-    const nuits    = calcNuits(item.date_arrivee, item.date_depart);
+    const fmtCourt = iso => {
+      const d = new Date(iso);
+      return isNaN(d) ? '—' : d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+    };
+    setText('#header-title-sub', `${fmtCourt(item.date_arrivee)} → ${fmtCourt(item.date_depart)}`);
+
     const estClose = item.statut === 'terminee' || item.statut === 'annulee';
-
-    const nb_adultes = item.nb_adultes || 0;
-    const nb_enfants = item.nb_enfants || 0;
-    const nb_bebes   = item.nb_bebes   || 0;
     const nb_animaux = item.nb_animaux || 0;
-    const voyageursParts = [];
-    if (nb_adultes > 0) voyageursParts.push(pluriel(nb_adultes, 'adulte', 'adultes'));
-    if (nb_enfants > 0) voyageursParts.push(pluriel(nb_enfants, 'enfant', 'enfants'));
-    if (nb_bebes   > 0) voyageursParts.push(pluriel(nb_bebes,   'bébé',   'bébés'));
-    const voyageursStr = voyageursParts.join(', ') || '—';
 
-    const lingeItems = buildLingeItems(item.linge);
+    const colsAnimauxLitBebe = [];
+    if (nb_animaux > 0) colsAnimauxLitBebe.push(`
+      <div class="detail-row-2col__col">
+        <span class="detail-label">Animaux</span>
+        <span class="detail-value">${pluriel(nb_animaux, 'animal', 'animaux')}</span>
+      </div>`);
+    if (item.lit_bebe) colsAnimauxLitBebe.push(`
+      <div class="detail-row-2col__col">
+        <span class="detail-label">Lit bébé</span>
+        <span class="detail-value">Oui</span>
+      </div>`);
+    const animauxLitBebeHTML = colsAnimauxLitBebe.length
+      ? `<div class="detail-row-2col">${colsAnimauxLitBebe.length === 1 ? `${colsAnimauxLitBebe[0]}<div class="detail-row-2col__col"></div>` : colsAnimauxLitBebe.join('')}</div>`
+      : '';
+
+    const lingeHTML = buildLingeHTML(item.linge);
 
     document.getElementById('detail-content').innerHTML = `
       ${buildDetailHero(item)}
@@ -1029,12 +1198,20 @@ window.initHostDetail = async function () {
         <div class="info-block__title">Réservation</div>
         <div class="info-block__body">
           ${item.plateforme ? `<div class="detail-row"><span class="detail-label">Plateforme</span><span class="detail-value">${item.plateforme}${item.ref_reservation ? ' · #' + item.ref_reservation : ''}</span></div>` : ''}
-          <div class="detail-row"><span class="detail-label">Arrivée</span><span class="detail-value">${formatDate(item.date_arrivee)} à ${formatHeure(item.heure_arrivee)}</span></div>
-          <div class="detail-row"><span class="detail-label">Départ</span><span class="detail-value">${formatDate(item.date_depart)} à ${formatHeure(item.heure_depart)}</span></div>
-          <div class="detail-row"><span class="detail-label">Durée</span><span class="detail-value">${pluriel(nuits, 'nuit', 'nuits')}</span></div>
-          <div class="detail-row"><span class="detail-label">Voyageurs</span><span class="detail-value">${voyageursStr}</span></div>
-          ${nb_animaux > 0 ? `<div class="detail-row"><span class="detail-label">Animaux</span><span class="detail-value">${pluriel(nb_animaux, 'animal', 'animaux')}</span></div>` : ''}
-          ${item.lit_bebe ? `<div class="detail-row"><span class="detail-label">Lit bébé</span><span class="detail-value">Oui</span></div>` : ''}
+          <div class="detail-row-2col">
+            <div class="detail-row-2col__col">
+              <span class="detail-label">Arrivée</span>
+              <span class="detail-value">${formatDate(item.date_arrivee)}</span>
+              <span class="detail-value--accent" style="font-size:0.8125rem;">${formatHeure(item.heure_arrivee)}</span>
+            </div>
+            <div class="detail-row-2col__col">
+              <span class="detail-label">Départ</span>
+              <span class="detail-value">${formatDate(item.date_depart)}</span>
+              <span class="detail-value--accent" style="font-size:0.8125rem;">${formatHeure(item.heure_depart)}</span>
+            </div>
+          </div>
+          ${buildVoyageursChips(item)}
+          ${animauxLitBebeHTML}
         </div>
       </div>
 
@@ -1042,35 +1219,26 @@ window.initHostDetail = async function () {
         <div class="info-block__title">Intervention</div>
         <div class="info-block__body">
           <div class="detail-row"><span class="detail-label">Agent</span><span class="detail-value">${item.agentName || 'Non assigné'}</span></div>
-          <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">${formatDate(item.date_intervention)}</span></div>
-          <div class="detail-row"><span class="detail-label">Horaires</span><span class="detail-value">${formatHeure(item.heure_debut)} – ${formatHeure(item.heure_fin)}</span></div>
-          ${item.remarques ? `<div class="detail-row"><span class="detail-label">Remarques</span><span class="detail-value" style="white-space:pre-line;">${item.remarques}</span></div>` : ''}
+          <div class="detail-row-2col">
+            <div class="detail-row-2col__col">
+              <span class="detail-label">Date</span>
+              <span class="detail-value">${formatDate(item.date_intervention)}</span>
+            </div>
+            <div class="detail-row-2col__col">
+              <span class="detail-label">Horaires</span>
+              <span class="detail-value--accent">${formatHeure(item.heure_debut)} – ${formatHeure(item.heure_fin)}</span>
+            </div>
+          </div>
+          ${item.remarques ? `<div class="detail-row"><span class="detail-label">Remarques</span><span class="detail-value" style="white-space:pre-line;padding-bottom:4px;display:block;">${item.remarques}</span></div>` : ''}
         </div>
       </div>
 
-      ${lingeItems.length ? `
+      ${lingeHTML ? `
       <div class="info-block">
         <div class="info-block__title">Linge</div>
         <div class="info-block__body">
-          <p style="color:var(--text-secondary);font-size:0.875rem;line-height:1.6;">${lingeItems.join(' · ')}</p>
+          <div class="linge-grid">${lingeHTML}</div>
         </div>
-      </div>` : ''}
-
-      ${item.cloture ? `
-      <div class="compte-rendu-block">
-        <div class="compte-rendu-block__header">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-          Compte-rendu de l'agent
-        </div>
-        ${item.cloture.photos?.length ? `
-        <div class="compte-rendu-photos">
-          ${item.cloture.photos.slice(0, 6).map(url => `<img class="compte-rendu-photo" src="${url}" alt="Photo de clôture" loading="lazy">`).join('')}
-        </div>` : ''}
-        ${item.cloture.remarque ? `<div class="compte-rendu-note">${item.cloture.remarque}</div>` : ''}
-        ${item.cloture.signalements?.length ? `
-        <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;">
-          ${item.cloture.signalements.map(s => `<span class="badge badge--warning">${s}</span>`).join('')}
-        </div>` : ''}
       </div>` : ''}
 
       ${!estClose ? `
@@ -1089,9 +1257,8 @@ window.initHostDetail = async function () {
       window.location.hash = '#/host/reservation/new';
     });
 
-    // Route du rapport détaillé pas encore implémentée : la redirection suffit pour l'instant
     document.getElementById('btn-rapport')?.addEventListener('click', () => {
-      window.location.hash = '#/host/reservation/' + id + '/rapport';
+      window.location.hash = '#/rapport/' + id;
     });
 
     // --- Écran plein page après tentative d'annulation (succès / erreur) ---
@@ -1155,6 +1322,19 @@ window.initHostDetail = async function () {
 /* ---------------------------------------------------------- */
 /*  Détail intervention Agent                                 */
 /* ---------------------------------------------------------- */
+
+// Calcule la durée entre deux heures HH:MM et retourne "X h" ou "X h MM"
+function duree(debut, fin) {
+  if (!debut || !fin) return '';
+  const [h1, m1] = debut.split(':').map(Number);
+  const [h2, m2] = fin.split(':').map(Number);
+  const totalMin = (h2 * 60 + m2) - (h1 * 60 + m1);
+  if (totalMin <= 0) return '';
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return m === 0 ? `${h} h` : `${h} h ${String(m).padStart(2, '0')}`;
+}
+
 window.initAgentDetail = async function () {
   document.getElementById('btn-back')?.addEventListener('click', () => {
     window.location.hash = '#/agent/dashboard';
@@ -1163,37 +1343,61 @@ window.initAgentDetail = async function () {
   const id = window._currentId;
   if (!id || id === 'intervention') { window.location.hash = '#/agent/dashboard'; return; }
 
-  let photosBase64 = []; // Réutilisé par la future checklist interactive de clôture
-
   try {
     const res  = await getIntervention(id);
     const item = res?.intervention;
     if (!item) throw new Error('Introuvable');
 
-    setHTML('#header-badge', statutBadge(item.statut));
+    setText('#header-title-main', 'Mon intervention');
+
+    const dInter      = new Date(item.date_intervention);
+    const labelInter  = isNaN(dInter) ? '' : dInter.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    setText('#header-title-sub', labelInter);
 
     const estClose   = item.statut === 'terminee' || item.statut === 'annulee';
     const nb_animaux = item.nb_animaux || 0;
-    const lingeItems = buildLingeItems(item.linge);
+    const lingeHTML  = buildLingeHTML(item.linge);
+
+    const colsAnimauxLitBebe = [];
+    if (nb_animaux > 0) colsAnimauxLitBebe.push(`
+      <div class="detail-row-2col__col">
+        <span class="detail-label">Animaux</span>
+        <span class="detail-value">${pluriel(nb_animaux, 'animal', 'animaux')}</span>
+      </div>`);
+    if (item.lit_bebe) colsAnimauxLitBebe.push(`
+      <div class="detail-row-2col__col">
+        <span class="detail-label">Lit bébé</span>
+        <span class="detail-value">Oui</span>
+      </div>`);
+    const animauxLitBebeHTML = colsAnimauxLitBebe.length
+      ? `<div class="detail-row-2col">${colsAnimauxLitBebe.length === 1 ? `${colsAnimauxLitBebe[0]}<div class="detail-row-2col__col"></div>` : colsAnimauxLitBebe.join('')}</div>`
+      : '';
+
+    const voyageursChipsHTML = buildVoyageursChips(item);
 
     document.getElementById('detail-content').innerHTML = `
       ${buildDetailHero(item)}
 
       <div class="info-block">
         <div class="info-block__title">Infos pratiques</div>
-        <div class="info-block__body">
-          <div class="detail-row"><span class="detail-label">Départ client</span><span class="detail-value" style="font-weight:600;color:var(--accent);">${formatHeure(item.heure_depart)}</span></div>
-          <div class="detail-row"><span class="detail-label">Début intervention</span><span class="detail-value">${formatHeure(item.heure_debut)}</span></div>
-          <div class="detail-row"><span class="detail-label">Fin intervention</span><span class="detail-value">${formatHeure(item.heure_fin)}</span></div>
+        <div class="info-block__body" style="padding:0;">
+          <div class="plage-intervention">
+            <div class="plage-intervention__row">
+              <span class="plage-intervention__time">${formatHeure(item.heure_debut)}</span>
+              <span class="plage-intervention__badge">${duree(item.heure_debut, item.heure_fin)}</span>
+              <span class="plage-intervention__time">${formatHeure(item.heure_fin)}</span>
+            </div>
+            <span class="plage-intervention__label">Plage d'intervention</span>
+          </div>
         </div>
       </div>
 
-      ${nb_animaux > 0 || item.lit_bebe ? `
+      ${voyageursChipsHTML || animauxLitBebeHTML ? `
       <div class="info-block">
         <div class="info-block__title">Voyageurs</div>
         <div class="info-block__body">
-          ${nb_animaux > 0 ? `<div class="detail-row"><span class="detail-label">Animaux</span><span class="detail-value">${pluriel(nb_animaux, 'animal', 'animaux')}</span></div>` : ''}
-          ${item.lit_bebe ? `<div class="detail-row"><span class="detail-label">Lit bébé</span><span class="detail-value">Oui</span></div>` : ''}
+          ${voyageursChipsHTML}
+          ${animauxLitBebeHTML}
         </div>
       </div>` : ''}
 
@@ -1201,57 +1405,823 @@ window.initAgentDetail = async function () {
       <div class="info-block">
         <div class="info-block__title">Instructions</div>
         <div class="info-block__body">
-          <p style="color:var(--text-primary);font-size:0.9375rem;line-height:1.6;white-space:pre-line;">${item.remarques}</p>
+          <p style="padding:14px 0;color:var(--text-primary);font-size:0.9375rem;line-height:1.6;white-space:pre-line;">${item.remarques}</p>
         </div>
       </div>` : ''}
 
-      ${lingeItems.length ? `
+      ${lingeHTML ? `
       <div class="info-block">
         <div class="info-block__title">Linge à préparer</div>
         <div class="info-block__body">
-          <p style="color:var(--text-secondary);font-size:0.875rem;line-height:1.6;">${lingeItems.join(' · ')}</p>
+          <div class="linge-grid">${lingeHTML}</div>
         </div>
-      </div>` : ''}
-
-      ${estClose && item.cloture ? `
-      <div class="compte-rendu-block">
-        <div class="compte-rendu-block__header">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-          Intervention clôturée
-        </div>
-        ${item.cloture.photos?.length ? `
-        <div class="compte-rendu-photos">
-          ${item.cloture.photos.slice(0, 6).map(url => `<img class="compte-rendu-photo" src="${url}" alt="" loading="lazy">`).join('')}
-        </div>` : ''}
-        ${item.cloture.remarque ? `<div class="compte-rendu-note">${item.cloture.remarque}</div>` : ''}
-        ${item.cloture.signalements?.length ? `
-        <div style="margin-top:10px;">
-          <p style="font-size:0.75rem;font-weight:600;color:var(--warning);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">Signalements</p>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;">
-            ${item.cloture.signalements.map(s => `<span class="badge badge--warning">${s}</span>`).join('')}
-          </div>
-        </div>` : ''}
       </div>` : ''}
 
       ${!estClose ? `
       <div class="action-bar">
-        <button class="btn btn--primary btn--full btn--lg" id="btn-start">Débuter l'intervention</button>
+        <button class="btn btn--primary btn--full btn--lg" id="btn-start">${item.statut === 'en_cours' ? "Reprendre l'intervention" : "Débuter l'intervention"}</button>
+      </div>` : item.statut === 'terminee' ? `
+      <div class="action-bar">
+        <button class="btn btn--primary btn--full btn--lg" id="btn-rapport">Mon rapport</button>
       </div>` : ''}
     `;
 
-    // Workflow de clôture pas encore défini : message d'attente en lieu et place de la checklist
-    document.getElementById('btn-start')?.addEventListener('click', () => {
-      confirmerAction({
-        titre: 'Fonctionnalité à venir',
-        message: 'La checklist interactive sera disponible prochainement.',
-        labelOui: 'OK',
-        labelNon: '',
-        danger: false,
-      });
+    document.getElementById('btn-start')?.addEventListener('click', async () => {
+      if (item.statut === 'en_cours') {
+        window.location.hash = '#/agent/cloture/' + id;
+        return;
+      }
+
+      const btn = document.getElementById('btn-start');
+      btn.disabled    = true;
+      btn.textContent = 'Démarrage…';
+      try {
+        const r = await debuterIntervention(id);
+        if (r?.success) {
+          window.location.hash = '#/agent/cloture/' + id;
+        } else {
+          toast(r?.error || 'Erreur lors du démarrage.', 'error');
+          btn.disabled    = false;
+          btn.textContent = "Débuter l'intervention";
+        }
+      } catch {
+        toast('Erreur réseau.', 'error');
+        btn.disabled    = false;
+        btn.textContent = "Débuter l'intervention";
+      }
+    });
+
+    // Route du rapport détaillé pas encore implémentée
+    document.getElementById('btn-rapport')?.addEventListener('click', () => {
+      session.set('rapport_intervention_id', item.id);
+      window.location.hash = '#/rapport/' + item.id;
     });
 
   } catch {
     document.getElementById('detail-content').innerHTML =
       '<div class="error-state"><p>Intervention introuvable.</p></div>';
   }
+};
+
+/* ---------------------------------------------------------- */
+/*  Clôture intervention Agent                                */
+/* ---------------------------------------------------------- */
+
+// Styles propres à la page de clôture, injectés une seule fois (même principe que initCustomSelect)
+function injectClotureStyles() {
+  if (document.getElementById('cloture-style')) return;
+  const css = `
+    .photo-preview-item{position:relative;}
+    .photo-preview-remove{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--danger);color:#fff;font-size:0.75rem;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.25);}
+    .conso-stepper-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--border-color);}
+    .conso-row--no-bottom{border-bottom:none;}
+    .conso-row__label{font-size:0.875rem;color:var(--text-primary);}
+    .conso-row__control{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+    .stepper--sm{height:34px;}
+    .stepper--sm .stepper__btn{width:34px;height:34px;font-size:1.0625rem;}
+    .stepper--sm .stepper__value{height:34px;width:30px;padding:0;font-size:0.875rem;}
+    .conso-separator{height:1px;background:var(--border-color);margin:4px 0 8px;}
+    .conso-check-group{display:flex;flex-direction:column;gap:8px;}
+    .linge-checklist{display:grid;grid-template-columns:1fr 1fr;}
+    .linge-check-row{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--border-color);cursor:pointer;transition:background var(--transition);-webkit-tap-highlight-color:transparent;user-select:none;}
+    .linge-check-row:nth-child(odd){border-right:1px solid var(--border-color);}
+    .linge-check-row:last-child,.linge-check-row:nth-last-child(2):nth-child(odd){border-bottom:none;}
+    .linge-check-row.linge-check-row--full{grid-column:1 / -1;border-right:none;border-bottom:none;}
+    .linge-check-row:active{background:var(--bg-primary);}
+    .linge-check-input{position:absolute;opacity:0;width:0;height:0;}
+    .linge-check-box{width:18px;min-width:18px;height:18px;border:2px solid var(--border-color);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background var(--transition),border-color var(--transition);}
+    .linge-check-box-mark{width:10px;height:8px;opacity:0;transform:scale(0.5);transition:opacity var(--transition-spring),transform var(--transition-spring);}
+    .linge-check-row:has(.linge-check-input:checked) .linge-check-box{background:var(--accent);border-color:var(--accent);}
+    .linge-check-row:has(.linge-check-input:checked) .linge-check-box-mark{opacity:1;transform:scale(1);}
+    .linge-check-label{font-size:0.875rem;color:var(--text-primary);position:relative;}
+    .linge-check-label::after{content:'';position:absolute;left:0;top:50%;width:100%;height:1.5px;background:var(--text-secondary);opacity:0.5;transform:translateY(-50%) scaleX(0);transform-origin:left;transition:transform 0.3s ease;}
+    .linge-check-row:has(.linge-check-input:checked) .linge-check-label::after{transform:translateY(-50%) scaleX(1);}
+    .linge-spacer{flex:1;}
+    .linge-check-count{font-size:0.875rem;font-weight:600;color:var(--accent);flex-shrink:0;}
+    .linge-manquant{display:flex;flex-direction:column;gap:10px;padding:12px 16px 16px;border-top:1px solid var(--border-color);}
+
+    /* Catégories parentes (indicateur de validité dérivé, jamais cliquable) */
+    .cloture-category{margin-bottom:16px;}
+    .cloture-category__header{display:flex;align-items:center;justify-content:space-between;padding:4px 4px 10px;}
+    .cloture-category__title{font-size:0.8125rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;}
+    .cloture-category__check{width:22px;height:22px;border-radius:5px;border:2px solid var(--border-color);background:var(--bg-surface);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background var(--transition),border-color var(--transition);}
+    .cloture-category__check svg{width:14px;height:14px;color:#fff;opacity:0;transform:scale(0.5);transition:opacity var(--transition-spring),transform var(--transition-spring);}
+    .cloture-category__check.is-checked{background:var(--success);border-color:var(--success);}
+    .cloture-category__check.is-checked svg{opacity:1;transform:scale(1);}
+
+    /* Slide-down générique (champs texte conditionnels) */
+    .slide-down{display:grid;grid-template-rows:0fr;transition:grid-template-rows 0.3s ease;}
+    .slide-down.is-open{grid-template-rows:1fr;}
+    .slide-down__inner{overflow:hidden;min-height:0;}
+    .slide-down.is-open .slide-down__inner{padding-top:8px;}
+
+    /* Signalements : colonne checkbox + champ texte, et style RAS distinct */
+    .signalement-col{display:flex;flex-direction:column;gap:4px;}
+    .signalement-item{flex:1;}
+    .signalement-item--ras{background:var(--bg-glass);}
+    .signalement-item--ras:has(input:checked){background:var(--success-bg);border-color:var(--success);}
+    .signalement-item--ras:has(input:checked) .signalement-check{background:var(--success);border-color:var(--success);}
+
+    /* Linge manquant : thème orange*/
+    #toggle-linge-manquant:checked{background:var(--warning);}
+    .toggle-label:has(#toggle-linge-manquant:checked){background:var(--warning-bg);border-color:var(--warning);}
+
+    /* Champ texte linge manquant : orange */
+    #linge-manquant-slide.is-open .input{border-color:var(--warning);box-shadow:0 0 0 3px rgba(245,158,11,0.15);}
+
+    /* Champs texte signalements détaillés : orange */
+    [data-signalement-slide].is-open .input{border-color:var(--warning);box-shadow:0 0 0 3px rgba(245,158,11,0.15);}
+  `;
+  const s = document.createElement('style');
+  s.id = 'cloture-style';
+  s.textContent = css;
+  document.head.appendChild(s);
+}
+
+// Compresse une image vers un data URL JPEG (1200px max, qualité 0.8)
+function compresserImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 1200;
+        let { width, height } = img;
+        if (width > MAX || height > MAX) {
+          if (width > height) { height = Math.round(height * MAX / width); width = MAX; }
+          else { width = Math.round(width * MAX / height); height = MAX; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width  = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.8));
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function buildConsommablesHTML(config) {
+  const steppers = config.filter(c => c.type === 'stepper');
+  const checks   = config.filter(c => c.type === 'check');
+
+  const stepperRows = steppers.map((c, i) => `
+    <div class="conso-stepper-row${i === steppers.length - 1 ? ' conso-row--no-bottom' : ''}">
+      <span class="conso-row__label">${c.label}</span>
+      <div class="conso-row__control">
+        <div class="stepper stepper--sm" role="group" aria-label="${c.label}">
+          <button type="button" class="stepper__btn" data-conso-minus="${c.id}" aria-label="Diminuer" disabled>−</button>
+          <div class="stepper__value" data-conso-value="${c.id}" aria-live="polite">0</div>
+          <button type="button" class="stepper__btn" data-conso-plus="${c.id}" aria-label="Augmenter">+</button>
+        </div>
+      </div>
+    </div>`).join('');
+
+  const checkRows = checks.map(c => `
+    <label class="toggle-label">
+      <span>${c.label}</span>
+      <input type="checkbox" class="toggle-input" data-conso-check="${c.id}">
+    </label>`).join('');
+
+  return `
+    <div>${stepperRows}</div>
+    ${checks.length ? `<div class="conso-separator"></div><div class="conso-check-group">${checkRows}</div>` : ''}
+  `;
+}
+
+// Icône check (cercle) réutilisée par les indicateurs de catégorie
+const ICONE_CHECK_CATEGORIE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+window.initAgentCloture = async function () {
+  injectClotureStyles();
+
+  const id = window._currentId;
+  if (!id || id === 'cloture') { window.location.hash = '#/agent/dashboard'; return; }
+
+  document.getElementById('btn-back')?.addEventListener('click', () => {
+    window.location.hash = '#/agent/intervention/' + id;
+  });
+
+  let item;
+  try {
+    const res = await getIntervention(id);
+    item = res?.intervention;
+    if (!item) throw new Error('Introuvable');
+  } catch {
+    document.getElementById('cloture-content').innerHTML =
+      '<div class="error-state"><p>Intervention introuvable.</p></div>';
+    return;
+  }
+
+  if (item.statut === 'terminee') {
+    window.location.hash = '#/rapport/' + id;
+    return;
+  }
+  if (item.statut === 'en_attente') {
+    window.location.hash = '#/agent/intervention/' + id;
+    return;
+  }
+
+  const nbVoyageurs = (item.nb_adultes || 0) + (item.nb_enfants || 0) + (item.nb_bebes || 0);
+  setText('#header-title-sub', `${item.client_nom || '—'} · ${pluriel(nbVoyageurs, 'voyageur', 'voyageurs')} · ${formatDateShort(item.date_intervention)}`);
+
+  // --- Brouillon de clôture (sessionStorage) : données textuelles uniquement, photos exclues ---
+  const draftKey = 'cloture_draft_' + id;
+  const draft    = session.get(draftKey);
+
+  const lingeBlocHTML = buildLingeBlocHTML(item.linge, item.lit_bebe, draft);
+  const config         = item.consommables_config || [];
+
+  document.getElementById('cloture-content').innerHTML = `
+    <div class="closure-block">
+      <div class="closure-block__header">
+        <span class="cloture-category__check" data-category-check="linge_conso">${ICONE_CHECK_CATEGORIE}</span>
+        <span>Linge &amp; consommables</span>
+      </div>
+      <div class="closure-block__body">
+
+        ${lingeBlocHTML ? `
+        <div class="info-block">
+          <div class="info-block__title">Linge à préparer</div>
+          <div class="info-block__body" style="padding:0;">
+            ${lingeBlocHTML}
+          </div>
+        </div>` : ''}
+
+        <div class="info-block">
+          <div class="info-block__title">Consommables</div>
+            <div class="info-block__body" style="padding:0 16px 14px;">
+            ${buildConsommablesHTML(config)}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="closure-block">
+      <div class="closure-block__header">
+        <span class="cloture-category__check" data-category-check="signalements_photos">${ICONE_CHECK_CATEGORIE}</span>
+        <span>Signalements &amp; remarques</span>
+      </div>
+      <div class="closure-block__body">
+
+        <div class="info-block">
+          <div class="info-block__title">Signalements</div>
+          <div class="info-block__body" style="padding:12px 16px 16px;">
+            ${buildSignalementsHTML(draft)}
+          </div>
+        </div>
+
+        <div class="info-block">
+          <div class="info-block__title">Remarque</div>
+          <div class="info-block__body" style="padding:12px 16px 16px;">
+            <textarea class="input" id="cloture-remarque" rows="3" placeholder="Un message pour l'hôte ? (optionnel)">${draft?.remarque || ''}</textarea>
+          </div>
+        </div>
+
+        <div class="info-block">
+          <div class="info-block__title">Photos (<span id="photo-count">0</span>)</div>
+          <div class="info-block__body" style="padding:12px 16px 16px; display:flex; flex-direction:column; gap:10px;">
+            <div class="photo-drop-zone" id="photo-drop-zone">
+              <input type="file" id="photo-input" accept="image/*" multiple>
+              <svg class="photo-drop-zone__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h3l2-3h6l2 3h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="3.5"/></svg>
+              <div class="photo-drop-zone__text">Ajouter des photos</div>
+              <div class="photo-drop-zone__hint">Appuie pour choisir une ou plusieurs photos</div>
+            </div>
+            <div class="photo-preview-grid" id="photo-preview-grid"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+  // --- Indicateur de catégorie : coche avec animation spring, décoche sans animation ---
+  function setCategoryCheck(name, valide) {
+    const el = document.querySelector(`[data-category-check="${name}"]`);
+    if (!el) return;
+    const dejaCoche = el.classList.contains('is-checked');
+    if (valide && !dejaCoche) {
+      el.classList.add('is-checked');
+    } else if (!valide && dejaCoche) {
+      el.style.transition = 'none';
+      el.classList.remove('is-checked');
+      requestAnimationFrame(() => { el.style.transition = ''; });
+    }
+  }
+
+  // --- Slide-down générique (champs texte conditionnels) ---
+  function setSlideOpen(el, ouvert) {
+    el?.classList.toggle('is-open', ouvert);
+  }
+
+  // --- Photos ---
+  const photosBase64 = [];
+
+  function renderPhotos() {
+    const grid = document.getElementById('photo-preview-grid');
+    if (!grid) return;
+    grid.innerHTML = photosBase64.map((b64, i) => `
+      <div class="photo-preview-item">
+        <img class="photo-thumb" src="${b64}" alt="Photo ${i + 1}">
+        <button type="button" class="photo-preview-remove" data-remove="${i}" aria-label="Supprimer la photo">×</button>
+      </div>`).join('');
+    setText('#photo-count', String(photosBase64.length));
+    grid.querySelectorAll('[data-remove]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        photosBase64.splice(parseInt(btn.dataset.remove, 10), 1);
+        renderPhotos();
+        recalcValidite();
+      });
+    });
+  }
+
+  document.getElementById('photo-input')?.addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    if (!files.length) return;
+    try {
+      const compressees = await Promise.all(files.map(compresserImage));
+      photosBase64.push(...compressees);
+      renderPhotos();
+      recalcValidite();
+    } catch {
+      toast('Erreur lors du traitement des photos.', 'error');
+    }
+  });
+
+  renderPhotos();
+
+  // --- Consommables ---
+  const stepperValues = {};
+  const checkValues   = {};
+
+  // Lit l'état courant des signalements depuis le DOM (RAS + 7 options standards)
+  function lireEtatSignalements() {
+    const ras   = !!document.getElementById('signalement-ras')?.checked;
+    const items = SIGNALEMENTS_OPTIONS.map(opt => ({
+      ...opt,
+      checked: document.querySelector(`[data-signalement="${opt.type}"]`)?.checked || false,
+      texte:   document.querySelector(`[data-signalement-texte="${opt.type}"]`)?.value.trim() || '',
+    }));
+    return { ras, items };
+  }
+
+  function signalementsValides({ ras, items }) {
+    if (ras) return true;
+    const coches = items.filter(i => i.checked);
+    if (!coches.length) return false;
+    return coches.every(i => !i.texteRequis || i.texte.length > 0);
+  }
+
+  // Construit le tableau mixte (chaînes + objets {type, detail}) attendu par le GAS
+  function construireSignalementsPayload({ ras, items }) {
+    if (ras) return ['RAS'];
+    return items.filter(i => i.checked).map(i => i.texteRequis ? { type: i.type, detail: i.texte } : i.type);
+  }
+
+  // Sauvegarde immédiate du brouillon (hors photos) à chaque modification
+  function saveDraft() {
+    const remarque = document.getElementById('cloture-remarque')?.value || '';
+
+    const lingeCoches = Array.from(document.querySelectorAll('[data-linge-check]:checked')).map(cb => cb.dataset.lingeCheck);
+    const lingeManquantActif  = !!document.getElementById('toggle-linge-manquant')?.checked;
+    const lingeManquantTexte  = document.getElementById('linge-manquant-texte')?.value || '';
+
+    const { ras, items } = lireEtatSignalements();
+    const signalements = {};
+    items.forEach(i => { signalements[i.type] = { checked: i.checked, texte: i.texte }; });
+
+    session.set(draftKey, {
+      stepperValues, checkValues,
+      lingeCoches, lingeManquantActif, lingeManquantTexte,
+      signalements, signalementRAS: ras,
+      remarque,
+    });
+  }
+
+  // --- Recalcul unique de validité : met à jour les catégories + le bouton Clôturer ---
+  function recalcValidite() {
+    const lingeRows          = Array.from(document.querySelectorAll('[data-linge-check]'));
+    const lingeManquantInput = document.getElementById('toggle-linge-manquant');
+    const lingeManquantTexte = document.getElementById('linge-manquant-texte')?.value.trim() || '';
+    const lingeManquantActif = !!lingeManquantInput?.checked;
+    const lingeManquantOk    = !lingeManquantActif || lingeManquantTexte.length > 0;
+    const litBebeRow      = document.querySelector('[data-linge-check="lit_bebe"]');
+    const litBebeOk       = !litBebeRow || litBebeRow.checked;
+    const lingeStandardOk = lingeRows.filter(cb => cb.dataset.lingeCheck !== 'lit_bebe').every(cb => cb.checked);
+    // Cas 1 : tout coché. Cas 2 : anomalie signalée. Lit bébé toujours requis indépendamment.
+    const lingeValide     = (lingeStandardOk && litBebeOk) || (lingeManquantActif && lingeManquantOk && litBebeOk);
+
+    const etatSignalements  = lireEtatSignalements();
+    const signalementsValide = signalementsValides(etatSignalements);
+
+    const photosValide = photosBase64.length > 0;
+
+    setCategoryCheck('linge_conso', lingeValide);
+    setCategoryCheck('signalements_photos', signalementsValide && photosValide);
+
+    const btn = document.getElementById('btn-cloture');
+    if (btn) btn.disabled = !(lingeValide && signalementsValide && photosValide);
+  }
+
+  document.querySelectorAll('[data-linge-check]').forEach(cb => {
+    cb.addEventListener('change', () => { saveDraft(); recalcValidite(); });
+  });
+
+  const toggleLingeManquant = document.getElementById('toggle-linge-manquant');
+  toggleLingeManquant?.addEventListener('change', () => {
+    setSlideOpen(document.getElementById('linge-manquant-slide'), toggleLingeManquant.checked);
+    saveDraft();
+    recalcValidite();
+  });
+  document.getElementById('linge-manquant-texte')?.addEventListener('input', () => { saveDraft(); recalcValidite(); });
+
+  config.filter(c => c.type === 'stepper').forEach(c => {
+    stepperValues[c.id] = draft?.stepperValues?.[c.id] ?? 0;
+    const minus = document.querySelector(`[data-conso-minus="${c.id}"]`);
+    const plus  = document.querySelector(`[data-conso-plus="${c.id}"]`);
+    const val   = document.querySelector(`[data-conso-value="${c.id}"]`);
+    val.textContent = stepperValues[c.id];
+    minus.disabled  = stepperValues[c.id] <= 0;
+    minus.addEventListener('click', () => {
+      if (stepperValues[c.id] > 0) {
+        stepperValues[c.id]--;
+        val.textContent = stepperValues[c.id];
+        minus.disabled = stepperValues[c.id] <= 0;
+        saveDraft();
+        recalcValidite();
+      }
+    });
+    plus.addEventListener('click', () => {
+      stepperValues[c.id]++;
+      val.textContent = stepperValues[c.id];
+      minus.disabled = false;
+      saveDraft();
+      recalcValidite();
+    });
+  });
+
+  config.filter(c => c.type === 'check').forEach(c => {
+    checkValues[c.id] = draft?.checkValues?.[c.id] ?? false;
+    const input = document.querySelector(`[data-conso-check="${c.id}"]`);
+    input.checked = checkValues[c.id];
+    input.addEventListener('change', () => {
+      checkValues[c.id] = input.checked;
+      saveDraft();
+      recalcValidite();
+    });
+  });
+
+  document.getElementById('cloture-remarque')?.addEventListener('input', () => { saveDraft(); recalcValidite(); });
+
+  // Signalements standards (4 sans texte + 3 avec texte) : exclusivité avec RAS, slide-down du champ texte
+  SIGNALEMENTS_OPTIONS.forEach(opt => {
+    const cb = document.querySelector(`[data-signalement="${opt.type}"]`);
+    cb?.addEventListener('change', () => {
+      if (opt.texteRequis) {
+        const slide = document.querySelector(`[data-signalement-slide="${opt.type}"]`);
+        setSlideOpen(slide, cb.checked);
+        if (!cb.checked) {
+          const ta = document.querySelector(`[data-signalement-texte="${opt.type}"]`);
+          if (ta) ta.value = '';
+        }
+      }
+      if (cb.checked) {
+        const ras = document.getElementById('signalement-ras');
+        if (ras) ras.checked = false;
+      }
+      saveDraft();
+      recalcValidite();
+    });
+    if (opt.texteRequis) {
+      document.querySelector(`[data-signalement-texte="${opt.type}"]`)?.addEventListener('input', () => { saveDraft(); recalcValidite(); });
+    }
+  });
+
+  // RAS : exclusivité bidirectionnelle — cocher RAS décoche et efface tous les autres signalements
+  document.getElementById('signalement-ras')?.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      SIGNALEMENTS_OPTIONS.forEach(opt => {
+        const cb = document.querySelector(`[data-signalement="${opt.type}"]`);
+        if (cb) cb.checked = false;
+        if (opt.texteRequis) {
+          const ta = document.querySelector(`[data-signalement-texte="${opt.type}"]`);
+          if (ta) ta.value = '';
+          setSlideOpen(document.querySelector(`[data-signalement-slide="${opt.type}"]`), false);
+        }
+      });
+    }
+    saveDraft();
+    recalcValidite();
+  });
+
+  recalcValidite();
+
+  // --- Écran de résultat plein page (succès / erreur) ---
+  function afficherEcranResultatCloture({ succes, titre, sousTitre }) {
+    const actionBar = document.getElementById('cloture-action-bar');
+    if (actionBar) actionBar.style.display = 'none';
+
+    const icone = succes ? `
+      <svg class="result-checkmark" viewBox="0 0 52 52">
+        <circle class="result-checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+        <path class="result-checkmark__check" fill="none" d="M14 27l8 8 16-16"/>
+      </svg>` : `
+      <svg class="result-cross" viewBox="0 0 52 52">
+        <circle class="result-cross__circle" cx="26" cy="26" r="25" fill="none"/>
+        <path class="result-cross__line" fill="none" d="M16 16l20 20"/>
+        <path class="result-cross__line" fill="none" d="M36 16l-20 20"/>
+      </svg>`;
+
+    document.getElementById('cloture-content').innerHTML = `
+      <div class="result-screen result-screen--${succes ? 'success' : 'error'}">
+        <div class="result-screen__icon">${icone}</div>
+        <h2 class="result-screen__title">${titre}</h2>
+        <p class="result-screen__subtitle">${sousTitre}</p>
+        ${succes ? `
+          <button class="btn btn--primary btn--full" id="btn-result-rapport">Voir mon rapport</button>
+          <button class="btn btn--secondary btn--full" id="btn-result-dashboard">Retour au tableau de bord</button>
+        ` : `
+          <button class="btn btn--primary btn--full" id="btn-result-retry">Réessayer</button>
+        `}
+      </div>`;
+
+    document.getElementById('btn-result-rapport')?.addEventListener('click', () => {
+      window.location.hash = '#/rapport/' + id;
+    });
+    document.getElementById('btn-result-dashboard')?.addEventListener('click', () => {
+      window.location.hash = '#/agent/dashboard';
+    });
+    document.getElementById('btn-result-retry')?.addEventListener('click', () => {
+      // Le hash ne change pas (on y est déjà) : un Router.navigate explicite force la réinitialisation
+      // de la page, qui restaurera automatiquement le brouillon depuis sessionStorage.
+      Router.navigate('#/agent/cloture/' + id);
+    });
+  }
+
+  // --- Soumission ---
+  document.getElementById('btn-cloture')?.addEventListener('click', async () => {
+    const ok = await confirmerAction({
+      titre: 'Clôturer l\'intervention ?',
+      message: 'Ton rapport sera envoyé à l\'hôte. Cette action est définitive.',
+      labelOui: 'Oui, clôturer',
+      labelNon: 'Annuler',
+      danger: false,
+      icone: `
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16 9.8"/>
+        </svg>`,
+    });
+    if (!ok) return;
+
+    const btn = document.getElementById('btn-cloture');
+    btn.disabled    = true;
+    btn.textContent = 'Clôture en cours…';
+
+    const remarque  = document.getElementById('cloture-remarque')?.value.trim() || '';
+    const etatSignalements = lireEtatSignalements();
+    const signalements      = construireSignalementsPayload(etatSignalements);
+    const lingeManquantActif = !!document.getElementById('toggle-linge-manquant')?.checked;
+    const lingeManquantTexte = document.getElementById('linge-manquant-texte')?.value.trim() || '';
+    const consommables = { ...stepperValues, ...checkValues };
+    const linge_coches = Array.from(document.querySelectorAll('[data-linge-check]:checked'))
+      .map(cb => cb.dataset.lingeCheck)
+      .filter(k => k !== 'lit_bebe');
+
+    try {
+      const res = await cloturerIntervention(id, {
+        remarque,
+        signalements,
+        linge_manquant:        lingeManquantActif,
+        linge_manquant_detail: lingeManquantActif ? lingeManquantTexte : '',
+        consommables,
+        photos: photosBase64,
+        linge_coches,
+      });
+      if (res?.success) {
+        session.remove(draftKey);
+        afficherEcranResultatCloture({
+          succes: true,
+          titre: 'Intervention clôturée',
+          sousTitre: 'Ton rapport a été envoyé à l\'hôte.',
+        });
+      } else {
+        afficherEcranResultatCloture({
+          succes: false,
+          titre: 'Une erreur est survenue',
+          sousTitre: res?.error || 'Erreur lors de la clôture.',
+        });
+      }
+    } catch {
+      afficherEcranResultatCloture({
+        succes: false,
+        titre: 'Une erreur est survenue',
+        sousTitre: 'Erreur réseau. Réessayez.',
+      });
+    }
+  });
+};
+
+/* ---------------------------------------------------------- */
+/*  Rapport de clôture (hôte + agent)                         */
+/* ---------------------------------------------------------- */
+// Pluralise une unité de consommable (gère les cas irréguliers)
+function pluraliserUnite(unite, valeur) {
+  if (valeur <= 1) return unite;
+  const irregulieres = { rouleau: 'rouleaux', sachet: 'sachets', paire: 'paires', unité: 'unités' };
+  return irregulieres[unite] || unite + 's';
+}
+
+// Overlay plein écran pour parcourir les photos d'un rapport de clôture
+function ouvrirLightbox(photosBase64, startIndex) {
+  let index = startIndex;
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.92);display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(0.96);transition:opacity 0.2s ease,transform 0.2s ease;';
+  overlay.innerHTML = `
+    <button type="button" id="lightbox-close" aria-label="Fermer" style="position:absolute;top:16px;right:16px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.15);color:#fff;font-size:1.25rem;line-height:1;display:flex;align-items:center;justify-content:center;z-index:1;">×</button>
+    <img id="lightbox-img" src="data:image/jpeg;base64,${photosBase64[index]}" style="max-width:90%;max-height:90%;object-fit:contain;">
+    <div id="lightbox-indicator" style="position:absolute;bottom:20px;left:0;right:0;text-align:center;color:#fff;font-size:0.875rem;"></div>
+  `;
+  document.body.appendChild(overlay);
+
+  const img       = overlay.querySelector('#lightbox-img');
+  const indicator = overlay.querySelector('#lightbox-indicator');
+
+  function majIndicateur() {
+    indicator.textContent = `${index + 1} / ${photosBase64.length}`;
+  }
+  majIndicateur();
+
+  requestAnimationFrame(() => {
+    overlay.style.opacity   = '1';
+    overlay.style.transform = 'scale(1)';
+  });
+
+  function fermer() {
+    overlay.style.opacity   = '0';
+    overlay.style.transform = 'scale(0.96)';
+    setTimeout(() => overlay.remove(), 200);
+  }
+
+  function afficher(nouvelIndex, direction) {
+    index = nouvelIndex;
+    img.style.transition = 'none';
+    img.style.transform   = `translateX(${direction === 'next' ? '40px' : '-40px'})`;
+    img.style.opacity     = '0';
+    requestAnimationFrame(() => {
+      img.src = `data:image/jpeg;base64,${photosBase64[index]}`;
+      requestAnimationFrame(() => {
+        img.style.transition = 'transform 0.25s ease, opacity 0.25s ease';
+        img.style.transform   = 'translateX(0)';
+        img.style.opacity     = '1';
+      });
+    });
+    majIndicateur();
+  }
+
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) fermer(); });
+  overlay.querySelector('#lightbox-close').addEventListener('click', fermer);
+
+  let touchStartX = 0;
+  overlay.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].clientX; });
+  overlay.addEventListener('touchend', (e) => {
+    const delta = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(delta) <= 50) return;
+    if (delta < 0 && index < photosBase64.length - 1) afficher(index + 1, 'next');
+    else if (delta > 0 && index > 0) afficher(index - 1, 'prev');
+  });
+}
+
+window.initRapport = async function () {
+  const id = window._currentId;
+  if (!id || id === 'rapport') {
+    window.location.hash = session.get('role') === 'host' ? '#/host/dashboard' : '#/agent/dashboard';
+    return;
+  }
+
+  document.getElementById('btn-back')?.addEventListener('click', () => {
+    window.location.hash = session.get('role') === 'host' ? '#/host/dashboard' : '#/agent/dashboard';
+  });
+
+  let item, cloture = null;
+  try {
+    const [resInt, resClo] = await Promise.all([getIntervention(id), getCloture(id)]);
+    item = resInt?.intervention;
+    if (!item) throw new Error('Introuvable');
+    if (resClo?.success) cloture = resClo.cloture;
+  } catch {
+    document.getElementById('rapport-content').innerHTML =
+      '<div class="error-state"><p>Intervention introuvable.</p></div>';
+    return;
+  }
+
+  setText('#header-title-main', 'Rapport');
+  setText('#header-title-sub', item.client_nom || '');
+
+  if (!cloture) {
+    document.getElementById('rapport-content').innerHTML = `
+      ${buildDetailHero(item)}
+      <div class="empty-state"><p>Rapport non disponible — intervention non encore clôturée.</p></div>
+    `;
+    return;
+  }
+
+  const config        = item.consommables_config || [];
+  const consoUtilises = config.filter(c => {
+    const v = cloture.consommables?.[c.id];
+    return c.type === 'stepper' ? v > 0 : !!v;
+  });
+
+  const lingeHTML = cloture.linge_coches !== null
+    ? buildLingeHTML(item.linge, cloture.linge_coches)
+    : buildLingeHTML(item.linge);
+
+  const photosBase64Arr = (cloture.photos || []).filter(p => p.base64).map(p => p.base64);
+  const photosHTML = photosBase64Arr
+    .map((b64, i) => `<img class="compte-rendu-photo" data-photo-index="${i}" src="data:image/jpeg;base64,${b64}" alt="Photo de clôture" style="cursor:pointer;">`)
+    .join('');
+
+  const consoHTML = consoUtilises.map((c, i) => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;${i < consoUtilises.length - 1 ? 'border-bottom:1px solid var(--border-color);' : ''}">
+      <span style="font-size:0.875rem;color:var(--text-primary);">${c.label}</span>
+      <span class="detail-value--accent">${c.type === 'stepper' ? cloture.consommables[c.id] + (c.unite ? ' ' + pluraliserUnite(c.unite, cloture.consommables[c.id]) : '') : 'Oui'}</span>
+    </div>`).join('');
+
+  // Tableau mixte (chaînes + objets {type, detail}) : « Linge manquant » est extrait, c'est une info
+  // de Catégorie 1 stockée dans signalements pour des raisons de format, pas un vrai signalement.
+  const signalementsBrut  = cloture.signalements || [];
+  const lingeManquantInfo = signalementsBrut.find(s => typeof s === 'object' && s?.type === 'Linge manquant');
+  const signalementsAffiches = signalementsBrut.filter(s => !(typeof s === 'object' && s?.type === 'Linge manquant'));
+
+  const libelleSignalement = (s) => {
+    if (typeof s === 'string') return s === 'RAS' ? 'Rien à signaler' : s;
+    return `${s.type} — ${s.detail}`;
+  };
+
+  const signalementsHTML = signalementsAffiches.map((s, i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 0;${i < signalementsAffiches.length - 1 ? 'border-bottom:1px solid var(--border-color);' : ''}">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+      <span style="font-size:0.875rem;color:var(--text-primary);">${libelleSignalement(s)}</span>
+    </div>`).join('');
+
+  const dCloture = new Date(cloture.created_at);
+  const horodatageStr = isNaN(dCloture) ? '' :
+    `Clôturé par ${item.agentName || '—'} le ${dCloture.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })} à ${String(dCloture.getHours()).padStart(2, '0')}:${String(dCloture.getMinutes()).padStart(2, '0')}`;
+
+  document.getElementById('rapport-content').innerHTML = `
+    ${buildDetailHero(item)}
+
+    ${(lingeHTML || lingeManquantInfo) ? `
+    <div class="info-block">
+      <div class="info-block__title">Linge préparé</div>
+      <div class="info-block__body">
+        ${lingeHTML ? `<div class="linge-grid">${lingeHTML}</div>` : ''}
+        ${lingeManquantInfo ? `
+        <div style="margin-top:${lingeHTML ? '10px' : '0'};padding:11px 14px;background:var(--warning-bg);border:1.5px solid var(--warning);border-radius:var(--radius-sm);box-shadow:0 0 0 3px rgba(245,158,11,0.12);display:flex;align-items:flex-start;gap:10px;">
+          <svg style="flex-shrink:0;margin-top:1px;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+          <p style="margin:0;font-size:0.875rem;color:var(--text-primary);white-space:pre-line;line-height:1.5;">${lingeManquantInfo.detail}</p>
+        </div>` : ''}
+      </div>
+    </div>` : ''}
+
+    ${photosHTML ? `
+    <div class="info-block">
+      <div class="info-block__title">Photos</div>
+      <div class="info-block__body" style="padding:16px;">
+        <div class="compte-rendu-photos" id="rapport-photos">${photosHTML}</div>
+      </div>
+    </div>` : ''}
+
+    ${consoHTML ? `
+    <div class="info-block">
+      <div class="info-block__title">Consommables utilisés</div>
+      <div class="info-block__body">${consoHTML}</div>
+    </div>` : ''}
+
+    ${signalementsHTML ? `
+    <div class="info-block">
+      <div class="info-block__title">Signalements</div>
+      <div class="info-block__body">${signalementsHTML}</div>
+    </div>` : ''}
+
+    ${cloture.remarque ? `
+    <div class="info-block">
+      <div class="info-block__title">Remarque</div>
+      <div class="info-block__body">
+        <p style="padding:14px 0;color:var(--text-primary);font-size:0.9375rem;line-height:1.6;white-space:pre-line;">${cloture.remarque}</p>
+      </div>
+    </div>` : ''}
+
+    ${horodatageStr ? `<div style="text-align:center;font-size:0.75rem;color:var(--text-secondary);padding:16px;border-top:1px solid var(--border-color);background:var(--bg-card);margin-top:auto;">${horodatageStr}</div>` : ''}
+  `;
+
+  document.querySelectorAll('#rapport-photos img').forEach(img => {
+    img.addEventListener('click', () => ouvrirLightbox(photosBase64Arr, parseInt(img.dataset.photoIndex, 10)));
+  });
 };

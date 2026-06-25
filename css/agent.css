@@ -18,20 +18,42 @@
   margin-bottom: 6px;
 }
 
-.intervention-hero__meta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.intervention-hero__dates {
   font-size: 0.8125rem;
-  opacity: 0.85;
+  opacity: 0.90;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+.intervention-hero__nuits {
+  font-size: 0.75rem;
+  opacity: 0.65;
 }
 
 .intervention-hero__badge {
-  margin-top: 10px;
+  margin-top: 14px;
 }
+/* Badge dans le hero — couleur native par statut, lisible sur bleu */
 .intervention-hero__badge .badge {
-  background: rgba(255,255,255,0.22);
-  color: #fff;
+  background: rgba(252, 211, 77, 0.28);
+  border: 1px solid transparent;
+}
+.intervention-hero__badge .badge--warning {
+  color: #FCD34D;
+  border-color: rgba(245, 158, 11, 0.45);
+}
+.intervention-hero__badge .badge--success {
+  color: #6EE7B7;
+  border-color: rgba(16, 185, 129, 0.45);
+}
+.intervention-hero__badge .badge--neutral {
+  color: #FCA5A5;
+  border-color: rgba(239, 68, 68, 0.45);
+}
+
+/* Pulsation sur les états actionnables : En attente et En cours */
+.intervention-hero__badge .badge--warning,
+.intervention-hero__badge .badge--accent {
+  animation: badge-pulse 1.5s ease-in-out infinite;
 }
 
 /* --- Info block ------------------------------------------ */
@@ -46,6 +68,10 @@
   overflow: hidden;
 }
 
+.closure-block__body .info-block { 
+  margin-bottom: 0; 
+}
+
 .info-block__title {
   font-size: 0.75rem;
   font-weight: 700;
@@ -57,6 +83,124 @@
 }
 
 .info-block__body { padding: 0 16px; }
+
+/* --- Voyageurs : chips ------------------------------------ */
+.info-row-voyageurs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+.info-row-voyageurs:last-child { border-bottom: none; }
+.voyageur-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.voyageur-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  border-radius: 99px;
+  padding: 5px 11px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+.voyageur-chip svg { flex-shrink: 0; }
+
+/* --- Ligne 2 colonnes pour détail pages ------------------- */
+.detail-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+.detail-row-2col:last-child { border-bottom: none; }
+.detail-row-2col__col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.detail-row-2col__col:first-child {
+  padding-right: 12px;
+  border-right: 1px solid var(--border-color);
+}
+.detail-row-2col__col:last-child {
+  padding-left: 14px;
+}
+.detail-value--accent {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+/* --- Grille linge ------------------------------------------ */
+.linge-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.linge-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border-color);
+  gap: 8px;
+}
+.linge-cell:nth-child(odd) {
+  padding-right: 14px;
+  border-right: 1px solid var(--border-color);
+}
+.linge-cell:nth-child(even) {
+  padding-left: 14px;
+}
+.linge-cell--no-bottom { border-bottom: none; }
+.linge-cell__label { font-size: 0.875rem; color: var(--text-secondary); }
+.linge-cell__count { font-size: 0.875rem; font-weight: 700; color: var(--accent); min-width: 20px; text-align: right; }
+
+/* --- Plage d'intervention — bloc centré -------------------- */
+.plage-intervention {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 16px 0 14px;
+}
+.plage-intervention__row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-evenly;
+  width: 100%;
+  min-height: 52px;
+}
+.plage-intervention__time {
+  font-size: 1.625rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  align-self: flex-end;
+}
+.plage-intervention__badge {
+  background: rgba(59, 91, 219, 0.82);
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  padding: 5px 13px;
+  border-radius: 99px;
+  flex-shrink: 0;
+  letter-spacing: 0.03em;
+  align-self: flex-start;
+}
+.plage-intervention__label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
 
 /* --- Closure block --------------------------------------- */
 .closure-block {
@@ -79,6 +223,12 @@
   color: #fff;
   font-weight: 600;
   font-size: 0.9375rem;
+}
+
+/* Pastille de catégorie sur header bleu */
+.closure-block__header .cloture-category__check {
+  border-color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .closure-block__body {
@@ -163,8 +313,8 @@
   align-items: center;
   gap: 8px;
   padding: 10px;
-  background: var(--bg-primary);
-  border: 1.5px solid transparent;
+  background: var(--bg-glass);
+  border: 1.5px solid var(--border-color);
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: border-color var(--transition), background var(--transition);
@@ -249,16 +399,19 @@
 
 /* --- Close action bar ------------------------------------ */
 .action-bar {
-  position: sticky;
+  position: fixed;
   bottom: 0;
+  left: 0;
+  right: 0;
   background: var(--bg-glass);
   backdrop-filter: var(--blur);
   -webkit-backdrop-filter: var(--blur);
-  border-top: 1px solid var(--border-glass);
+  border-top: 1px solid var(--border-color);
   padding: 14px 16px;
   box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
   z-index: 50;
-  margin: 0 -16px -80px;
+  max-width: var(--max-w);
+  margin: 0 auto;
 }
 
 /* --- Status dot ----------------------------------------- */
@@ -272,3 +425,121 @@
 .status-dot--success { background: var(--success); }
 .status-dot--warning { background: var(--warning); }
 .status-dot--primary { background: var(--accent); }
+
+/* --- Consommables (clôture) ------------------------------- */
+.conso-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+.conso-row:last-child { border-bottom: none; }
+
+.conso-check-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+}
+.conso-check-row:last-child { border-bottom: none; }
+
+.conso-label {
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.conso-stepper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.conso-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  flex-shrink: 0;
+  transition: border-color var(--transition), color var(--transition);
+}
+.conso-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.conso-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.conso-value {
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 22px;
+  text-align: center;
+}
+
+.conso-separator {
+  height: 1px;
+  background: var(--border-color);
+  margin: 6px 0 10px;
+}
+
+/* --- Toggle interrupteur (consommables check) ------------- */
+.conso-checkbox { display: none; }
+
+.conso-toggle-track {
+  position: relative;
+  width: 42px;
+  height: 24px;
+  border-radius: 99px;
+  background: var(--border-color);
+  flex-shrink: 0;
+  transition: background var(--transition);
+}
+.conso-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  transition: transform var(--transition-spring);
+}
+.conso-checkbox:checked ~ .conso-toggle-track {
+  background: var(--accent);
+}
+.conso-checkbox:checked ~ .conso-toggle-track .conso-toggle-thumb {
+  transform: translateX(18px);
+}
+
+/* --- Suppression vignette photo --------------------------- */
+.photo-thumb-delete {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  line-height: 1;
+}

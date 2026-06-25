@@ -10,6 +10,8 @@ const Router = {
     'host/reservation':     'pages/host-detail.html',
     'agent/dashboard':      'pages/dashboard.html',
     'agent/intervention':   'pages/agent-detail.html',
+    'agent/cloture':        'pages/agent-cloture.html',
+    'rapport':              'pages/rapport.html',
   },
 
   /* --- Résolution de route -------------------------------- */
