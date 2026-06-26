@@ -22,12 +22,12 @@ const messaging = firebase.messaging();
 
 // Notifications reçues quand l'app est en arrière-plan ou fermée
 messaging.onBackgroundMessage((payload) => {
-  const title = payload.notification?.title || 'Cleanzr';
-  const body  = payload.notification?.body  || '';
+  const title = payload.data?.title || 'Cleanzr';
+  const body  = payload.data?.body  || '';
   self.registration.showNotification(title, {
     body,
-    icon:    '/assets/icons/icon-192.png',
-    badge:   '/assets/icons/icon-192.png',
+    icon:    '/assets/icons/classic_pwa_pack/android/launchericon-192x192.png',
+    badge:   '/assets/icons/classic_pwa_pack/android/launchericon-72x72.png',
     data:    payload.data || {},
     vibrate: [200, 100, 200],
   });

@@ -2042,10 +2042,13 @@ function ouvrirLightbox(photosBase64, startIndex) {
   let index = startIndex;
 
   const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.92);display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(0.96);transition:opacity 0.2s ease,transform 0.2s ease;';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.35);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(0.96);transition:opacity 0.2s ease,transform 0.2s ease;';
   overlay.innerHTML = `
+    <a id="lightbox-download" href="data:image/jpeg;base64,${photosBase64[index]}" download="photo_${index + 1}.jpg" aria-label="Télécharger" style="position:absolute;top:16px;left:16px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.15);color:#fff;display:flex;align-items:center;justify-content:center;z-index:1;text-decoration:none;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </a>
     <button type="button" id="lightbox-close" aria-label="Fermer" style="position:absolute;top:16px;right:16px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.15);color:#fff;font-size:1.25rem;line-height:1;display:flex;align-items:center;justify-content:center;z-index:1;">×</button>
-    <img id="lightbox-img" src="data:image/jpeg;base64,${photosBase64[index]}" style="max-width:90%;max-height:90%;object-fit:contain;">
+    <img id="lightbox-img" src="data:image/jpeg;base64,${photosBase64[index]}" style="max-width:90%;max-height:90%;object-fit:contain;border-radius:12px;">
     <div id="lightbox-indicator" style="position:absolute;bottom:20px;left:0;right:0;text-align:center;color:#fff;font-size:0.875rem;"></div>
   `;
   document.body.appendChild(overlay);
@@ -2083,6 +2086,11 @@ function ouvrirLightbox(photosBase64, startIndex) {
       });
     });
     majIndicateur();
+    const dl = overlay.querySelector('#lightbox-download');
+    if (dl) {
+      dl.href     = `data:image/jpeg;base64,${photosBase64[index]}`;
+      dl.download = `photo_${index + 1}.jpg`;
+    }
   }
 
   overlay.addEventListener('click', (e) => { if (e.target === overlay) fermer(); });
@@ -2150,7 +2158,7 @@ window.initRapport = async function () {
   const consoHTML = consoUtilises.map((c, i) => `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;${i < consoUtilises.length - 1 ? 'border-bottom:1px solid var(--border-color);' : ''}">
       <span style="font-size:0.875rem;color:var(--text-primary);">${c.label}</span>
-      <span class="detail-value--accent">${c.type === 'stepper' ? cloture.consommables[c.id] + (c.unite ? ' ' + pluraliserUnite(c.unite, cloture.consommables[c.id]) : '') : 'Oui'}</span>
+      <span class="detail-value--accent">${c.type === 'stepper' ? cloture.consommables[c.id] : 'Oui'}</span>
     </div>`).join('');
 
   // Tableau mixte (chaînes + objets {type, detail}) : « Linge manquant » est extrait, c'est une info
@@ -2161,18 +2169,23 @@ window.initRapport = async function () {
 
   const libelleSignalement = (s) => {
     if (typeof s === 'string') return s === 'RAS' ? 'Rien à signaler' : s;
-    return `${s.type} — ${s.detail}`;
+    return `${s.type} → ${s.detail}`;
   };
 
-  const signalementsHTML = signalementsAffiches.map((s, i) => `
-    <div style="display:flex;align-items:center;gap:8px;padding:10px 0;${i < signalementsAffiches.length - 1 ? 'border-bottom:1px solid var(--border-color);' : ''}">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
-      <span style="font-size:0.875rem;color:var(--text-primary);">${libelleSignalement(s)}</span>
-    </div>`).join('');
+  const signalementsHTML = signalementsAffiches.length > 0 ? `
+    <div style="display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:10px 0;">
+      ${signalementsAffiches.map(s => `
+        <div style="display:inline-flex;align-items:center;gap:8px;padding:10px 12px;background:var(--warning-bg);border:1.5px solid var(--warning);border-radius:var(--radius-sm);box-shadow:0 0 0 3px rgba(245,158,11,0.12);">
+          <svg style="flex-shrink:0;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+          <span style="font-size:0.875rem;color:var(--text-primary);">${libelleSignalement(s)}</span>
+        </div>`).join('')}
+    </div>` : '';
 
   const dCloture = new Date(cloture.created_at);
   const horodatageStr = isNaN(dCloture) ? '' :
-    `Clôturé par ${item.agentName || '—'} le ${dCloture.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })} à ${String(dCloture.getHours()).padStart(2, '0')}:${String(dCloture.getMinutes()).padStart(2, '0')}`;
+    `Clôturé par <span style="color:var(--accent);">${item.agentName || '—'}</span> le ${dCloture.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })} à ${String(dCloture.getHours()).padStart(2, '0')}:${String(dCloture.getMinutes()).padStart(2, '0')}`;
+
+  if (horodatageStr) document.getElementById('rapport-content').style.paddingBottom = '56px';
 
   document.getElementById('rapport-content').innerHTML = `
     ${buildDetailHero(item)}
@@ -2183,7 +2196,8 @@ window.initRapport = async function () {
       <div class="info-block__body">
         ${lingeHTML ? `<div class="linge-grid">${lingeHTML}</div>` : ''}
         ${lingeManquantInfo ? `
-        <div style="margin-top:${lingeHTML ? '10px' : '0'};padding:11px 14px;background:var(--warning-bg);border:1.5px solid var(--warning);border-radius:var(--radius-sm);box-shadow:0 0 0 3px rgba(245,158,11,0.12);display:flex;align-items:flex-start;gap:10px;">
+        <div style="font-size:0.75rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin:0 -16px;padding:20px 16px 10px;border-bottom:1px solid var(--border-color);${lingeHTML ? 'border-top:1px solid var(--border-color);' : ''}">Linge manquant</div>
+        <div style="margin-top:${lingeHTML ? '10px' : '0'};margin-bottom:10px;padding:11px 14px;background:var(--warning-bg);border:1.5px solid var(--warning);border-radius:var(--radius-sm);box-shadow:0 0 0 3px rgba(245,158,11,0.12);display:inline-flex;align-items:flex-start;gap:10px;">
           <svg style="flex-shrink:0;margin-top:1px;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
           <p style="margin:0;font-size:0.875rem;color:var(--text-primary);white-space:pre-line;line-height:1.5;">${lingeManquantInfo.detail}</p>
         </div>` : ''}
@@ -2218,7 +2232,7 @@ window.initRapport = async function () {
       </div>
     </div>` : ''}
 
-    ${horodatageStr ? `<div style="text-align:center;font-size:0.75rem;color:var(--text-secondary);padding:16px;border-top:1px solid var(--border-color);background:var(--bg-card);margin-top:auto;">${horodatageStr}</div>` : ''}
+    ${horodatageStr ? `<div style="position:fixed;bottom:0;left:0;right:0;text-align:center;font-size:0.75rem;color:var(--text-secondary);padding:14px 16px;border-top:1px solid var(--border-color);background:var(--bg-card);z-index:10;">${horodatageStr}</div>` : ''}
   `;
 
   document.querySelectorAll('#rapport-photos img').forEach(img => {
