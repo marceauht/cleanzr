@@ -1,10 +1,3 @@
-// ============================================================
-//  firebase-config.js — TEMPLATE
-//  Ce fichier est ignoré par git (.gitignore).
-//  Créez votre propre version avec vos vraies clés Firebase.
-//  Ne jamais committer ce fichier.
-// ============================================================
-
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyDYHc-h55LpSqW61w45m2gLc8C9FkHMsBk",
   authDomain: "cleanzr.firebaseapp.com",

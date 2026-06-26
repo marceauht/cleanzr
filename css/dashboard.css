@@ -149,17 +149,10 @@
 
 /* Today highlight */
 .today-card {
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%) !important;
-  border-color: transparent !important;
+  border-color: var(--accent) !important;
+  border-width: 2px !important;
 }
-.today-card .intervention-card__logement,
-.today-card .today-label       { color: rgba(255,255,255,0.95); }
-.today-card .intervention-card__meta,
-.today-card .intervention-card__agent { color: rgba(255,255,255,0.75); }
-.today-card .date-badge {
-  background: rgba(255,255,255,0.20);
-  color: #fff;
-}
+.today-card .intervention-card__platform { color: var(--text-secondary); }
 
 /* --- FAB -------------------------------------------------- */
 .fab {
