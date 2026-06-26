@@ -116,6 +116,7 @@ window.initDashboard = async function () {
             <div class="intervention-card__info">
               ${role === 'host' ? `
               <div style="display:flex;flex-direction:column;gap:2px;">
+              ${today ? '<div class="today-label">Aujourd\'hui</div>' : ''}
                 ${plateformeRef ? `<div class="intervention-card__platform">${plateformeRef}</div>` : ''}
                 <div class="intervention-card__logement">${item.client_nom || '—'}</div>
                 ${item.logement_nom ? `<div class="intervention-card__meta"><span>${item.logement_nom}</span></div>` : ''}
