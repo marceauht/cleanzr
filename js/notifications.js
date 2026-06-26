@@ -59,7 +59,7 @@ window.initFCM = async function () {
   // Navigation depuis une notification cliquée (SW → client)
   navigator.serviceWorker.addEventListener('message', (event) => {
     if (event.data?.type === 'NOTIFICATION_CLICK' && event.data.url) {
-      window.location.hash = event.data.url;
+      window.location.hash = event.data.url.replace(/^\//, '');
     }
   });
 
