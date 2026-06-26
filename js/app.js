@@ -64,6 +64,11 @@
     const userId = session.get('userId');
     await requestNotificationPermission(userId);
     activerForeground();
+    const redirect = sessionStorage.getItem('czr_redirect');
+    if (redirect) {
+      sessionStorage.removeItem('czr_redirect');
+      window.location.hash = redirect;
+    }
   });
 
 })();

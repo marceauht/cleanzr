@@ -1264,9 +1264,8 @@ window.initHostDetail = async function () {
 
     // --- Écran plein page après tentative d'annulation (succès / erreur) ---
     function afficherEcranAnnulation(succes, messageErreur) {
-      const classeNeutre = succes ? ' result-cross--neutral' : '';
       const icone = `
-        <svg class="result-cross${classeNeutre}" viewBox="0 0 52 52">
+        <svg class="result-cross" viewBox="0 0 52 52">
           <circle class="result-cross__circle" cx="26" cy="26" r="25" fill="none"/>
           <path class="result-cross__line" fill="none" d="M16 16l20 20"/>
           <path class="result-cross__line" fill="none" d="M36 16l-20 20"/>

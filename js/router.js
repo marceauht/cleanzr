@@ -33,6 +33,10 @@ const Router = {
 
     const role = session.get('role');
     if (!role) {
+      const h = window.location.hash;
+      if (h && h !== '#' && h !== '#/') {
+        sessionStorage.setItem('czr_redirect', h);
+      }
       window.history.replaceState(null, '', window.location.pathname);
       window.location.hash = '';
       return;
