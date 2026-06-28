@@ -2145,11 +2145,20 @@ window.initRapport = async function () {
 
   const signalementsHTML = signalementsAffiches.length > 0 ? `
     <div style="display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:10px 0;">
-      ${signalementsAffiches.map(s => `
-        <div style="display:inline-flex;align-items:center;gap:8px;padding:10px 12px;background:var(--warning-bg);border:1.5px solid var(--warning);border-radius:var(--radius-sm);box-shadow:0 0 0 3px rgba(245,158,11,0.12);">
-          <svg style="flex-shrink:0;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+      ${signalementsAffiches.map(s => {
+        const estRAS  = s === 'RAS';
+        const couleur = estRAS ? 'var(--success)'      : 'var(--warning)';
+        const fond    = estRAS ? 'var(--success-bg)'   : 'var(--warning-bg)';
+        const glow    = estRAS ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)';
+        const icone   = estRAS
+          ? `<svg style="flex-shrink:0;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg>`
+          : `<svg style="flex-shrink:0;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>`;
+        return `
+        <div style="display:inline-flex;align-items:center;gap:8px;padding:10px 12px;background:${fond};border:1.5px solid ${couleur};border-radius:var(--radius-sm);box-shadow:0 0 0 3px ${glow};">
+          ${icone}
           <span style="font-size:0.875rem;color:var(--text-primary);">${libelleSignalement(s)}</span>
-        </div>`).join('')}
+        </div>`;
+      }).join('')}
     </div>` : '';
 
   const dCloture = new Date(cloture.created_at);
