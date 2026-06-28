@@ -14,6 +14,7 @@
     CREATE_IDENTITY: 'create-identity',
     CREATE_PIN:      'create-pin',
     CREATE_CONFIRM:  'create-confirm',
+    CREATE_RECOVERY: 'create-recovery',
     LOGIN:           'login',
     EXISTING_ACCESS: 'existing-access',
     FORGOT_NAME:     'forgot-name',
@@ -30,6 +31,12 @@
   let pendingNom   = null;
   let firstPinHash = null;
   let forgotNom    = null;
+  let forgotRecoveryHash = null;
+
+  // Normalise un mot de récupération avant chiffrement (tolérance casse + espaces)
+  function normaliserMotRecuperation(mot) {
+    return String(mot || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  }
 
   /* --- Profil localStorage ------------------------------- */
   function getLocalProfile() {
@@ -50,13 +57,14 @@
     setupPinKeyboard();
     setupCreationPanel();
     setupForgotPanel();
+    setupRecoveryPanel();
 
     const profile = getLocalProfile();
     enterState(profile?.nom && profile?.role ? S.LOGIN : S.CREATE_IDENTITY);
   }
 
   function hideAllPanels() {
-    ['panel-creation', 'panel-pin', 'panel-forgot'].forEach(id => {
+    ['panel-creation', 'panel-pin', 'panel-forgot', 'panel-create-recovery'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.hidden = true;
     });
@@ -116,6 +124,13 @@
         setSecondary('Changer le PIN', () => enterState(S.CREATE_PIN));
         break;
 
+      case S.CREATE_RECOVERY: {
+        showPanel('panel-create-recovery');
+        const ri = document.getElementById('input-recovery');
+        if (ri) { ri.value = ''; setTimeout(() => ri.focus(), 220); }
+        break;
+      }
+
       case S.LOGIN: {
         const profile = getLocalProfile();
         pendingNom = profile?.nom;
@@ -138,6 +153,8 @@
       case S.FORGOT_NAME: {
         showPanel('panel-forgot');
         const fi = document.getElementById('input-forgot-nom');
+        const fr = document.getElementById('input-forgot-recovery');
+        if (fr) fr.value = '';
         if (fi) { fi.value = ''; setTimeout(() => fi.focus(), 220); }
         break;
       }
@@ -327,26 +344,8 @@
           clearPin();
           return;
         }
-        setLoading(true);
-        try {
-          const res = await creerProfil(pendingNom, pendingRole, firstPinHash);
-          if (res.success) {
-            saveLocalProfile(res.nom || pendingNom, pendingRole);
-            session.set('role',   pendingRole);
-            session.set('name',   res.nom || pendingNom);
-            session.set('userId', res.userId);
-            onAuthSuccess(pendingRole);
-          } else {
-            shake();
-            setLabel(res.error || 'Erreur lors de la création', true);
-            clearPin();
-          }
-        } catch {
-          shake();
-          setLabel('Erreur réseau — réessayez', true);
-          clearPin();
-        }
-        setLoading(false);
+        // PIN confirmé → dernière étape de création : le mot de récupération
+        enterState(S.CREATE_RECOVERY);
         break;
 
       /* --- Flux 2 & 3 : connexion PIN -------------------- */
@@ -396,7 +395,7 @@
         }
         setLoading(true);
         try {
-          const res = await reinitialiserPin(forgotNom, firstPinHash);
+          const res = await reinitialiserPin(forgotNom, forgotRecoveryHash, firstPinHash);
           if (res.success) {
             saveLocalProfile(res.nom || forgotNom, res.role);
             session.set('role',   res.role);
@@ -462,7 +461,7 @@
     });
   }
 
-  /* --- Panel PIN oublié ---------------------------------- */
+  /* --- Panel PIN oublié (nom + mot de récupération) ------ */
   function setupForgotPanel() {
     document.getElementById('btn-forgot-back')?.addEventListener('click', () => {
       const profile = getLocalProfile();
@@ -473,31 +472,74 @@
     document.getElementById('input-forgot-nom')?.addEventListener('keydown', e => {
       if (e.key === 'Enter') submitForgotName();
     });
+    document.getElementById('input-forgot-recovery')?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') submitForgotName();
+    });
     document.getElementById('input-forgot-nom')?.addEventListener('input', () => effacerErreurAuth('input-forgot-nom'));
+    document.getElementById('input-forgot-recovery')?.addEventListener('input', () => effacerErreurAuth('input-forgot-recovery'));
   }
 
   async function submitForgotName() {
-    const nom = document.getElementById('input-forgot-nom')?.value.trim() || '';
-    if (nom.length < 2) {
-      afficherErreurAuth('input-forgot-nom', 'Remplissez ce champ');
-      return;
-    }
+    const nom     = document.getElementById('input-forgot-nom')?.value.trim() || '';
+    const motNorm = normaliserMotRecuperation(document.getElementById('input-forgot-recovery')?.value || '');
+
+    let valide = true;
+    if (nom.length < 2)     { afficherErreurAuth('input-forgot-nom', 'Remplissez ce champ'); valide = false; }
+    if (motNorm.length < 1) { afficherErreurAuth('input-forgot-recovery', 'Remplissez ce champ'); valide = false; }
+    if (!valide) return;
 
     const btn = document.getElementById('btn-forgot-nom-next');
     if (btn) { btn.disabled = true; btn.textContent = 'Vérification…'; }
 
     try {
-      const res = await verifierNom(nom);
-      if (res.found) {
+      const recoveryHash = await sha256(motNorm);
+      const res = await verifierRecuperation(nom, recoveryHash);
+      if (res.success) {
+        forgotRecoveryHash = recoveryHash;
         enterState(S.FORGOT_NEW_PIN, { nom });
       } else {
-        afficherErreurAuth('input-forgot-nom', 'Aucun compte trouvé');
+        afficherErreurAuth('input-forgot-recovery', res.error || 'Prénom ou mot de récupération incorrect');
       }
     } catch {
-      afficherErreurAuth('input-forgot-nom', 'Erreur réseau');
+      afficherErreurAuth('input-forgot-recovery', 'Erreur réseau');
     } finally {
       if (btn) { btn.disabled = false; btn.textContent = 'Vérifier'; }
     }
+  }
+
+  /* --- Panel mot de récupération (création) -------------- */
+  function setupRecoveryPanel() {
+    async function soumettre() {
+      const motNorm = normaliserMotRecuperation(document.getElementById('input-recovery')?.value || '');
+      if (motNorm.length < 3) {
+        afficherErreurAuth('input-recovery', 'Choisissez un mot d\'au moins 3 caractères');
+        return;
+      }
+      setLoading(true);
+      try {
+        const recoveryHash = await sha256(motNorm);
+        const res = await creerProfil(pendingNom, pendingRole, firstPinHash, recoveryHash);
+        if (res.success) {
+          saveLocalProfile(res.nom || pendingNom, pendingRole);
+          session.set('role',   pendingRole);
+          session.set('name',   res.nom || pendingNom);
+          session.set('userId', res.userId);
+          onAuthSuccess(pendingRole);
+        } else {
+          afficherErreurAuth('input-recovery', res.error || 'Erreur lors de la création');
+        }
+      } catch {
+        afficherErreurAuth('input-recovery', 'Erreur réseau — réessayez');
+      }
+      setLoading(false);
+    }
+
+    document.getElementById('btn-recovery-next')?.addEventListener('click', soumettre);
+    document.getElementById('input-recovery')?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') soumettre();
+    });
+    document.getElementById('input-recovery')?.addEventListener('input', () => effacerErreurAuth('input-recovery'));
+    document.getElementById('btn-recovery-back')?.addEventListener('click', () => enterState(S.CREATE_PIN, { role: pendingRole, nom: pendingNom }));
   }
 
   /* --- Transition vers l'app ----------------------------- */

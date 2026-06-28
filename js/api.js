@@ -27,16 +27,21 @@ async function verifierPin(pinHash) {
   return gasRequest('verifierPin', { pinHash });
 }
 
-async function creerProfil(nom, role, pinHash) {
-  return gasRequest('creerProfil', { nom, role, pinHash });
+async function creerProfil(nom, role, pinHash, recoveryHash) {
+  return gasRequest('creerProfil', { nom, role, pinHash, recoveryHash });
 }
 
 async function verifierNom(nom) {
   return gasRequest('verifierNom', { nom });
 }
 
-async function reinitialiserPin(nom, pinHash) {
-  return gasRequest('reinitialiserPin', { nom, pinHash });
+// Vérifie nom + mot de récupération avant d'autoriser un nouveau PIN (ne modifie rien)
+async function verifierRecuperation(nom, recoveryHash) {
+  return gasRequest('verifierRecuperation', { nom, recoveryHash });
+}
+
+async function reinitialiserPin(nom, recoveryHash, pinHash) {
+  return gasRequest('reinitialiserPin', { nom, recoveryHash, pinHash });
 }
 
 /* --- Interventions (GET) ---------------------------------- */
