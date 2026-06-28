@@ -165,46 +165,6 @@
   pointer-events: none;
 }
 
-/* --- Agent select card ------------------------------------ */
-.agent-selector {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.agent-option {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: var(--bg-primary);
-  border: 1.5px solid transparent;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: border-color var(--transition), background var(--transition);
-}
-.agent-option.selected {
-  background: var(--accent-bg);
-  border-color: var(--accent);
-}
-
-.agent-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.875rem;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.agent-name  { font-weight: 600; font-size: 0.9375rem; }
-.agent-email { font-size: 0.75rem; color: var(--text-secondary); }
-
 /* --- Indicateur de progression (formulaire multi-étapes) -- */
 .form-progress {
   position: sticky;
@@ -309,9 +269,7 @@
   to { stroke-dashoffset: 0; }
 }
 
-/* Croix animée neutre (annulation intentionnelle, ni succès ni erreur) */
-.result-cross--neutral .result-cross__circle,
-.result-cross--neutral .result-cross__line {
+/* Croix animée neutre (annulation intentionnelle {
   stroke: var(--text-secondary);
 }
 

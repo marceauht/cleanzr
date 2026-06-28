@@ -73,42 +73,6 @@
   box-shadow: var(--shadow-md);
 }
 
-/* --- Buttons ---------------------------------------------- */
-.btn-primary {
-  background: var(--accent);
-  color: white;
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 14px 24px;
-  font-weight: 600;
-  font-size: 15px;
-  width: 100%;
-  cursor: pointer;
-  box-shadow: var(--shadow-accent);
-  transition: transform var(--transition), opacity var(--transition);
-  transform: translateY(0);
-  font-family: var(--font-body);
-}
-.btn-primary:hover  { transform: translateY(-1px); opacity: 0.92; }
-.btn-primary:active { transform: translateY(0) scale(0.98); }
-.btn-primary:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
-
-.btn-secondary {
-  background: var(--bg-surface);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  padding: 12px 20px;
-  font-weight: 500;
-  cursor: pointer;
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
-  transition: opacity var(--transition), transform var(--transition);
-  font-family: var(--font-body);
-}
-.btn-secondary:hover  { opacity: 0.85; }
-.btn-secondary:active { transform: scale(0.97); }
-
 /* --- Input ------------------------------------------------ */
 .input {
   width: 100%;
@@ -155,12 +119,7 @@
 .badge--accent    { color: var(--accent-light);    background: var(--accent-bg);  }
 .badge--success   { color: var(--success);         background: var(--success-bg); }
 .badge--warning   { color: var(--warning);         background: var(--warning-bg); }
-.badge--danger    { color: var(--danger);          background: var(--danger-bg);  }
 .badge--neutral   { color: var(--text-secondary);  background: var(--border-color); }
-.badge--avenir    { color: var(--accent);          background: var(--accent-bg);  }
-.badge--terminee  { color: var(--success);         background: var(--success-bg); }
-.badge--annulee   { color: var(--danger);          background: var(--danger-bg);  }
-.badge--en_attente { color: var(--warning);        background: var(--warning-bg); }
 
 /* --- Animations ------------------------------------------ */
 @keyframes fadeInUp {

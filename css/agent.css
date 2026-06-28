@@ -238,21 +238,6 @@
   gap: 16px;
 }
 
-/* --- Photo upload ---------------------------------------- */
-.photo-upload-area {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.photo-upload-label {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  display: block;
-  margin-bottom: 4px;
-}
-
 .photo-drop-zone {
   border: 2px dashed var(--border-color);
   border-radius: var(--radius-md);
@@ -291,14 +276,6 @@
   object-fit: cover;
   border: 1px solid var(--border-color);
   background: var(--bg-primary);
-}
-
-.photo-thumb--placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--border-color);
-  font-size: 1.5rem;
 }
 
 /* --- Signalement checkboxes ------------------------------ */
@@ -356,25 +333,6 @@
   display: block;
 }
 
-/* --- Compte-rendu (rapport clôture affiché) --------------- */
-.compte-rendu-block {
-  background: var(--success-bg);
-  border: 1px solid rgba(16,185,129,0.25);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  margin-bottom: 12px;
-}
-
-.compte-rendu-block__header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 700;
-  font-size: 0.875rem;
-  color: var(--success);
-  margin-bottom: 12px;
-}
-
 .compte-rendu-photos {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -387,14 +345,6 @@
   border-radius: var(--radius-sm);
   object-fit: cover;
   border: 1px solid rgba(16,185,129,0.2);
-}
-
-.compte-rendu-note {
-  font-size: 0.875rem;
-  color: var(--text-primary);
-  background: rgba(255,255,255,0.6);
-  border-radius: var(--radius-sm);
-  padding: 10px;
 }
 
 /* --- Close action bar ------------------------------------ */
@@ -414,18 +364,6 @@
   margin: 0 auto;
 }
 
-/* --- Status dot ----------------------------------------- */
-.status-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.status-dot--success { background: var(--success); }
-.status-dot--warning { background: var(--warning); }
-.status-dot--primary { background: var(--accent); }
-
 /* --- Consommables (clôture) ------------------------------- */
 .conso-row {
   display: flex;
@@ -437,51 +375,10 @@
 }
 .conso-row:last-child { border-bottom: none; }
 
-.conso-check-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border-color);
-  cursor: pointer;
-}
-.conso-check-row:last-child { border-bottom: none; }
-
-.conso-label {
-  font-size: 0.9375rem;
-  color: var(--text-primary);
-  flex: 1;
-}
-
 .conso-stepper {
   display: flex;
   align-items: center;
   gap: 6px;
-}
-
-.conso-btn {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: 1.5px solid var(--border-color);
-  background: var(--bg-surface);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  flex-shrink: 0;
-  transition: border-color var(--transition), color var(--transition);
-}
-.conso-btn:hover:not(:disabled) {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-.conso-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
 }
 
 .conso-value {
@@ -495,51 +392,4 @@
   height: 1px;
   background: var(--border-color);
   margin: 6px 0 10px;
-}
-
-/* --- Toggle interrupteur (consommables check) ------------- */
-.conso-checkbox { display: none; }
-
-.conso-toggle-track {
-  position: relative;
-  width: 42px;
-  height: 24px;
-  border-radius: 99px;
-  background: var(--border-color);
-  flex-shrink: 0;
-  transition: background var(--transition);
-}
-.conso-toggle-thumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
-  transition: transform var(--transition-spring);
-}
-.conso-checkbox:checked ~ .conso-toggle-track {
-  background: var(--accent);
-}
-.conso-checkbox:checked ~ .conso-toggle-track .conso-toggle-thumb {
-  transform: translateX(18px);
-}
-
-/* --- Suppression vignette photo --------------------------- */
-.photo-thumb-delete {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: rgba(0,0,0,0.55);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.875rem;
-  line-height: 1;
 }

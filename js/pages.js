@@ -64,7 +64,7 @@ window.initDashboard = async function () {
     } catch (err) {
         console.error('[Dashboard] Erreur:', err);
         const list = document.getElementById('interventions-list');
-        if (list) list.innerHTML = `<div class="empty-state"><p style="color:var(--danger);font-size:0.75rem;word-break:break-all;">${err?.message || String(err)}</p></div>`;
+        if (list) list.innerHTML = `<div class="empty-state"><p>Impossible de charger les interventions.</p></div>`;
       }
 
   function updateStats(list) {
@@ -835,28 +835,6 @@ window.initHostNewReservation = async function () {
       torchons:   parseInt(document.getElementById('linge-torchons').value)   || 0,
     };
 
-    const gi = id => parseInt(document.getElementById(id)?.value) || 0;
-    const consommables = {
-      gel_douche:        gi('conso-gel-douche'),
-      shampoing:         gi('conso-shampoing'),
-      apres_shampoing:   gi('conso-apres-shampoing'),
-      savon:             gi('conso-savon'),
-      kit_hygiene:       gi('conso-kit-hygiene'),
-      brosse_dents:      gi('conso-brosse-dents'),
-      boules_quies:      gi('conso-boules-quies'),
-      cafe:              gi('conso-cafe'),
-      the:               gi('conso-the'),
-      sucre:             gi('conso-sucre'),
-      sel_poivre:        gi('conso-sel-poivre'),
-      huile_olive:       gi('conso-huile-olive'),
-      liquide_vaisselle: gi('conso-liquide-vaisselle'),
-      eponge:            gi('conso-eponge'),
-      sacs_poubelle:     gi('conso-sacs-poubelle'),
-      essuie_tout:       gi('conso-essuie-tout'),
-      eau:               gi('conso-eau'),
-      autre:             document.getElementById('conso-autre')?.value.trim() || '',
-    };
-
     const btn = document.getElementById('btn-next');
     btn.disabled    = true;
     btn.textContent = modeEdition ? 'Enregistrement en cours…' : 'Création en cours…';
@@ -866,7 +844,7 @@ window.initHostNewReservation = async function () {
       client_nom, nb_adultes, nb_enfants, nb_bebes, nb_animaux, lit_bebe,
       date_arrivee, heure_arrivee, date_depart, heure_depart,
       agent_id, date_intervention, heure_debut, heure_fin,
-      linge, consommables, remarques,
+      linge, remarques,
     };
 
     try {
@@ -2030,13 +2008,6 @@ window.initAgentCloture = async function () {
 /* ---------------------------------------------------------- */
 /*  Rapport de clôture (hôte + agent)                         */
 /* ---------------------------------------------------------- */
-// Pluralise une unité de consommable (gère les cas irréguliers)
-function pluraliserUnite(unite, valeur) {
-  if (valeur <= 1) return unite;
-  const irregulieres = { rouleau: 'rouleaux', sachet: 'sachets', paire: 'paires', unité: 'unités' };
-  return irregulieres[unite] || unite + 's';
-}
-
 // Overlay plein écran pour parcourir les photos d'un rapport de clôture
 function ouvrirLightbox(photosBase64, startIndex) {
   let index = startIndex;

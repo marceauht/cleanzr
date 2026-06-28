@@ -132,12 +132,6 @@ h3 { font-size: 1rem;     font-weight: 600; }
   max-width: 100%;
 }
 
-.header-user {
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-
 /* --- Icon button (glass) ---------------------------------- */
 .btn-icon-glass {
   display: flex;
@@ -193,27 +187,10 @@ h3 { font-size: 1rem;     font-weight: 600; }
   -webkit-backdrop-filter: var(--blur);
 }
 
-.btn--ghost {
-  background: transparent;
-  color: var(--text-primary);
-}
-.btn--ghost:hover:not(:disabled) { background: var(--bg-surface); }
-
 .btn--danger {
   background: var(--danger);
   color: #fff;
 }
-
-.btn--icon {
-  padding: 8px;
-  border-radius: var(--radius-sm);
-  color: var(--text-secondary);
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-}
-.btn--icon:hover { color: var(--text-primary); }
-
-.btn--sm   { padding: 7px 12px; font-size: 0.8125rem; }
 .btn--lg   { padding: 14px 24px; font-size: 1rem; border-radius: var(--radius-md); }
 .btn--full { width: 100%; }
 
@@ -282,13 +259,6 @@ h3 { font-size: 1rem;     font-weight: 600; }
   outline: none;
 }
 .textarea::placeholder { color: var(--text-secondary); }
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.form-hint { font-size: 0.75rem; color: var(--text-secondary); }
 
 /* --- Validation des champs obligatoires -------------------- */
 .input--error {
@@ -389,7 +359,6 @@ h3 { font-size: 1rem;     font-weight: 600; }
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
-.spinner--sm { width: 18px; height: 18px; border-width: 2px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 

@@ -31,10 +31,6 @@ async function creerProfil(nom, role, pinHash, recoveryHash) {
   return gasRequest('creerProfil', { nom, role, pinHash, recoveryHash });
 }
 
-async function verifierNom(nom) {
-  return gasRequest('verifierNom', { nom });
-}
-
 // Vérifie nom + mot de récupération avant d'autoriser un nouveau PIN (ne modifie rien)
 async function verifierRecuperation(nom, recoveryHash) {
   return gasRequest('verifierRecuperation', { nom, recoveryHash });
