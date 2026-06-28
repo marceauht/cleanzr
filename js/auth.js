@@ -247,8 +247,10 @@
     submitting = loading;
     const spinner  = document.getElementById('auth-spinner');
     const keyboard = document.getElementById('pin-keyboard');
+    const recovery = document.getElementById('panel-create-recovery');
     if (spinner)  spinner.classList.toggle('hidden', !loading);
     if (keyboard) keyboard.style.visibility = loading ? 'hidden' : '';
+    if (recovery) recovery.style.visibility = loading ? 'hidden' : '';
   }
 
   function shake() {
@@ -281,6 +283,16 @@
     if (!el) return;
     el.classList.remove('input--error');
     el.closest('.auth-panel')?.querySelector('.auth-field-error')?.remove();
+  }
+
+  // Marque un champ vide en erreur : encadré rouge animé, sans message texte
+  function marquerChampAuth(elementId) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    el.closest('.auth-panel')?.querySelectorAll('.auth-field-error').forEach(e => e.remove());
+    el.classList.remove('input--error');
+    void el.offsetWidth; // re-déclenche l'animation
+    el.classList.add('input--error');
   }
 
   /* --- Clavier PIN --------------------------------------- */
@@ -438,7 +450,7 @@
         return;
       }
       if (nom.length < 2) {
-        afficherErreurAuth('input-nom', 'Remplissez ce champ');
+        marquerChampAuth('input-nom');
         return;
       }
       enterState(S.CREATE_PIN, { role: selectedRole, nom });
@@ -484,8 +496,8 @@
     const motNorm = normaliserMotRecuperation(document.getElementById('input-forgot-recovery')?.value || '');
 
     let valide = true;
-    if (nom.length < 2)     { afficherErreurAuth('input-forgot-nom', 'Remplissez ce champ'); valide = false; }
-    if (motNorm.length < 1) { afficherErreurAuth('input-forgot-recovery', 'Remplissez ce champ'); valide = false; }
+    if (nom.length < 2)     { marquerChampAuth('input-forgot-nom'); valide = false; }
+    if (motNorm.length < 1) { marquerChampAuth('input-forgot-recovery'); valide = false; }
     if (!valide) return;
 
     const btn = document.getElementById('btn-forgot-nom-next');
@@ -511,8 +523,8 @@
   function setupRecoveryPanel() {
     async function soumettre() {
       const motNorm = normaliserMotRecuperation(document.getElementById('input-recovery')?.value || '');
-      if (motNorm.length < 3) {
-        afficherErreurAuth('input-recovery', 'Choisissez un mot d\'au moins 3 caractères');
+      if (motNorm.length < 1) {
+        marquerChampAuth('input-recovery');
         return;
       }
       setLoading(true);
