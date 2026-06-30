@@ -9,14 +9,6 @@
 
 (function () {
 
-  // DIAGNOSTIC TEMPORAIRE — filet de sécurité global, à retirer une fois le bug identifié
-  window.addEventListener('error', (e) => {
-    alert('DIAGNOSTIC erreur globale :\n' + (e.error?.stack || e.message));
-  });
-  window.addEventListener('unhandledrejection', (e) => {
-    alert('DIAGNOSTIC promesse rejetée :\n' + (e.reason?.stack || e.reason));
-  });
-
   /* --- États --------------------------------------------- */
   const S = {
     CREATE_IDENTITY: 'create-identity',
@@ -348,28 +340,13 @@
   /* --- Logique à 4 chiffres ------------------------------ */
   async function onPinComplete(enteredPin) {
     if (submitting) return;
-
-    // DIAGNOSTIC TEMPORAIRE — à retirer une fois le bug identifié
-    let hash;
-    try {
-      hash = await sha256(enteredPin);
-    } catch (err) {
-      alert('DIAGNOSTIC sha256 a échoué :\n' + (err?.name || '') + ' — ' + (err?.message || err) +
-            '\ncrypto.subtle existe ? ' + (typeof crypto !== 'undefined' && !!crypto.subtle) +
-            '\nisSecureContext ? ' + window.isSecureContext);
-      clearPin();
-      return;
-    }
+    const hash = await sha256(enteredPin);
 
     switch (state) {
 
       /* --- Flux 1 : création ----------------------------- */
       case S.CREATE_PIN:
-        try {
-          enterState(S.CREATE_CONFIRM, { pinHash: hash });
-        } catch (err) {
-          alert('DIAGNOSTIC enterState(CREATE_CONFIRM) a échoué :\n' + (err?.name || '') + ' — ' + (err?.message || err));
-        }
+        enterState(S.CREATE_CONFIRM, { pinHash: hash });
         break;
 
       case S.CREATE_CONFIRM:
@@ -380,11 +357,7 @@
           return;
         }
         // PIN confirmé → dernière étape de création : le mot de récupération
-        try {
-          enterState(S.CREATE_RECOVERY);
-        } catch (err) {
-          alert('DIAGNOSTIC enterState(CREATE_RECOVERY) a échoué :\n' + (err?.name || '') + ' — ' + (err?.message || err));
-        }
+        enterState(S.CREATE_RECOVERY);
         break;
 
       /* --- Flux 2 & 3 : connexion PIN -------------------- */
