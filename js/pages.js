@@ -780,18 +780,30 @@ window.initHostNewReservation = async function () {
     if (inputDepart.dataset.iso) effacerErreur(inputDepart, inputDepart.closest('.form-group'), false);
     updateNuits();
   });
-  inputDepart.addEventListener('change', () => {
-    const interventionEl = document.getElementById('input-date-intervention');
-    if (inputDepart.dataset.iso) {
-      interventionEl.dataset.iso = inputDepart.dataset.iso;
-      interventionEl.value = formatDateFr(inputDepart.dataset.iso);
-    }
-  });
 
-  // --- Date pickers personnalisés (arrivée / départ / date d'intervention) ---
+  // --- Date pickers personnalisés (arrivée / départ) ---
+  // La date d'intervention n'est plus saisie ici : elle est calculée
+  // automatiquement côté serveur (date de départ de la réservation
+  // précédente sur ce logement), et recalculée à chaque mouvement de
+  // réservation sur le logement (création, modification, annulation).
   initDatePicker(inputArrivee, { minDate: () => isoAujourdhui() });
   initDatePicker(inputDepart,  { minDate: () => inputArrivee.dataset.iso ? isoLendemain(inputArrivee.dataset.iso) : isoAujourdhui() });
-  initDatePicker(document.getElementById('input-date-intervention'), { minDate: () => isoAujourdhui() });
+
+  // --- Forçage manuel de la date d'intervention (édition uniquement) ---
+  // Une réservation en création suit toujours le calcul automatique. Le
+  // forçage n'a de sens qu'en édition, pour gérer une exception ponctuelle
+  // (agent indisponible, correction...) sans casser le calcul des autres.
+  const blocManuel   = document.getElementById('bloc-date-intervention-manuelle');
+  const toggleManuel = document.getElementById('toggle-date-intervention-manuelle');
+  const groupeManuel = document.getElementById('date-intervention-manuelle-group');
+  const inputManuel  = document.getElementById('input-date-intervention-manuelle');
+  if (modeEdition) {
+    blocManuel.style.display = '';
+    initDatePicker(inputManuel, { minDate: () => isoAujourdhui() });
+  }
+  toggleManuel.addEventListener('change', (e) => {
+    groupeManuel.style.display = e.target.checked ? '' : 'none';
+  });
 
   // --- Champs heure avec auto-formatage HH:MM ---
   initChampHeure(document.getElementById('input-heure-arrivee'));
@@ -814,7 +826,6 @@ window.initHostNewReservation = async function () {
     const date_depart   = inputDepart.dataset.iso || '';
     const heure_depart  = document.getElementById('input-heure-depart').value;
     const agent_id      = getCustomSelectValue('select-agent');
-    const date_intervention = document.getElementById('input-date-intervention').dataset.iso || date_depart;
     const heure_debut   = document.getElementById('input-heure-debut').value;
     const heure_fin     = document.getElementById('input-heure-fin').value;
     const remarques     = document.getElementById('input-remarques').value.trim();
@@ -843,8 +854,10 @@ window.initHostNewReservation = async function () {
       logement_id, plateforme, ref_reservation,
       client_nom, nb_adultes, nb_enfants, nb_bebes, nb_animaux, lit_bebe,
       date_arrivee, heure_arrivee, date_depart, heure_depart,
-      agent_id, date_intervention, heure_debut, heure_fin,
+      agent_id, heure_debut, heure_fin,
       linge, remarques,
+      date_intervention_verrouillee: toggleManuel.checked,
+      date_intervention_manuelle: inputManuel.dataset.iso || '',
     };
 
     try {
@@ -856,7 +869,7 @@ window.initHostNewReservation = async function () {
         afficherEcranResultat({
           succes: true,
           titre: modeEdition ? 'Réservation modifiée' : 'Réservation créée',
-          sousTitre: `${client_nom} · Intervention le ${formatDate(date_intervention)}`,
+          sousTitre: `${client_nom} · Intervention le ${formatDate(res.date_intervention)}`,
         });
       } else {
         afficherEcranResultat({
@@ -919,7 +932,12 @@ window.initHostNewReservation = async function () {
 
     definirDate(inputArrivee, d.date_arrivee);
     definirDate(inputDepart,  d.date_depart);
-    definirDate(document.getElementById('input-date-intervention'), d.date_intervention);
+
+    if (d.date_verrouillee) {
+      toggleManuel.checked = true;
+      groupeManuel.style.display = '';
+      definirDate(inputManuel, d.date_intervention);
+    }
 
     document.getElementById('input-heure-arrivee').value = d.heure_arrivee || '';
     document.getElementById('input-heure-depart').value  = d.heure_depart  || '';

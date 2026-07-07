@@ -189,9 +189,16 @@
             </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label" for="input-date-intervention">Date d'intervention *</label>
-            <input class="input" id="input-date-intervention" type="text" placeholder="Automatique à la date de départ">
+          <div class="form-group" id="bloc-date-intervention-manuelle" style="display:none;">
+            <label class="toggle-label">
+              <span>Forcer une date différente (ignore le calcul automatique)</span>
+              <input type="checkbox" id="toggle-date-intervention-manuelle" class="toggle-input">
+            </label>
+            <div id="date-intervention-manuelle-group" class="slide-down" style="display:none; margin-top:8px;">
+              <label class="form-label" for="input-date-intervention-manuelle">Date d'intervention forcée</label>
+              <input class="input" id="input-date-intervention-manuelle" type="text" placeholder="Choisir une date">
+              <p style="font-size:13px;color:var(--text-secondary,#767676);margin-top:6px;">Cette date restera figée : elle ne sera plus recalculée automatiquement, même si une réservation voisine change. Décoche pour revenir au calcul automatique.</p>
+            </div>
           </div>
 
           <div class="date-range">
